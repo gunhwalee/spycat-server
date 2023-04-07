@@ -3,7 +3,7 @@ const usersRouter = require("../routes/users");
 
 const routeLoader = async app => {
   app.use("/", indexRouter);
-  app.use("/users", usersRouter);
+  app.use("/api/users", usersRouter);
 };
 
 module.exports = routeLoader;
