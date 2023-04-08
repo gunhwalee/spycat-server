@@ -53,6 +53,8 @@ exports.loadUserInfo = async (req, res, next) => {
         message: "비밀번호가 올바르지 않습니다.",
       });
     }
+
+    req.user = user._id;
   } catch (err) {
     return next(err);
   }

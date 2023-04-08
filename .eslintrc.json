@@ -9,6 +9,7 @@
     "no-unused-vars": "off",
     "no-use-before-define": "off",
     "no-console": "off",
-    "consistent-return": "off"
+    "consistent-return": "off",
+    "no-underscore-dangle":"off"
   }
 }
