@@ -2,30 +2,31 @@ const jwt = require("jsonwebtoken");
 const User = require("../../../models/User");
 
 exports.issueToken = async (req, res, next) => {
-  const { id } = req.body;
-
-  const accessToken = jwt.sign({ id }, process.env.ACCESS_TOKEN, {
+  const accessToken = jwt.sign({ id: req.user }, process.env.ACCESS_TOKEN, {
     expiresIn: "15m",
   });
 
-  const refreshToken = jwt.sign({ id }, process.env.REFRESH_TOKEN, {
-    expiresIn: "2d",
+  const refreshToken = jwt.sign({ id: req.user }, process.env.REFRESH_TOKEN, {
+    expiresIn: "1d",
   });
 
   try {
-    const user = await User.findOneAndUpdate({ id }, { refreshToken });
-    const { name, id: loginId } = user;
-    const userId = loginId.slice(0, loginId.indexOf("@"));
+    const user = await User.findByIdAndUpdate(req.user, { refreshToken });
+    const { name } = user;
 
     res
       .status(201)
-      .cookie("accessToken", accessToken)
-      .cookie("refreshToken", refreshToken)
+      .cookie("accessToken", accessToken, {
+        httpOnly: true,
+      })
+      .cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+      })
       .send({
         result: "ok",
         message: "정상적으로 로그인됐습니다.",
         name,
-        id: userId,
+        id: req.user,
       });
   } catch (err) {
     return next(err);
@@ -33,16 +34,8 @@ exports.issueToken = async (req, res, next) => {
 };
 
 exports.verifyToken = async (req, res, next) => {
-  const cookies = {};
-  const cookiesArray = req.headers.cookie.split(";");
-
-  cookiesArray.forEach(cookie => {
-    const [key, value] = cookie.trim().split("=");
-    cookies[key] = value;
-  });
-
   try {
-    const { accessToken, refreshToken } = cookies;
+    const { accessToken, refreshToken } = req.cookies;
 
     if (accessToken && refreshToken) {
       const payload = jwt.verify(accessToken, process.env.ACCESS_TOKEN);
@@ -59,7 +52,9 @@ exports.verifyToken = async (req, res, next) => {
           expiresIn: "15m",
         });
         req.user = id;
-        res.cookie("accessToken", newAccessToken);
+        res.cookie("accessToken", newAccessToken, {
+          httpOnly: true,
+        });
 
         return next();
       }
