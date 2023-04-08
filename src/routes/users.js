@@ -1,10 +1,15 @@
 const express = require("express");
-const { signupValidator } = require("./validators/userValidator");
-const { saveUser } = require("./middlewares/userHandler");
+const {
+  signupValidator,
+  loginValidator,
+} = require("./validators/inputValidator");
+const { saveUserInfo, loadUserInfo } = require("./middlewares/userHandler");
 const { signupEndpoint } = require("./controllers/user.controller");
+const { issueToken } = require("./validators/jwt");
 
 const router = express.Router();
 
-router.post("/", signupValidator, saveUser, signupEndpoint);
+router.post("/", signupValidator, saveUserInfo, signupEndpoint);
+router.post("/login", loginValidator, loadUserInfo, issueToken);
 
 module.exports = router;
