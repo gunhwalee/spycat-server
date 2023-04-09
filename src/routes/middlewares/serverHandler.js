@@ -13,7 +13,7 @@ const checkUrl = async url => {
 
 exports.loadServerName = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user);
+    const user = await User.findById(req.user).populate("servers");
 
     res.send({
       result: "ok",
@@ -26,7 +26,7 @@ exports.loadServerName = async (req, res, next) => {
 
 exports.createServerInfo = async (req, res, next) => {
   const userId = req.params.id;
-  const { name, url } = req.body;
+  const { serverName, url } = req.body;
 
   try {
     const hasUrl = await checkUrl(url);
@@ -38,7 +38,7 @@ exports.createServerInfo = async (req, res, next) => {
       });
     }
 
-    const server = await Server.create({ name, url });
+    const server = await Server.create({ serverName, url });
     const user = await User.findById(userId);
     await User.findByIdAndUpdate(userId, {
       servers: [...user.servers, server._id],

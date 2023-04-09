@@ -2,6 +2,7 @@ const express = require("express");
 const {
   signupValidator,
   loginValidator,
+  serverInfoValidator,
 } = require("./validators/inputValidator");
 const {
   createUserInfo,
@@ -21,6 +22,11 @@ router.post("/", signupValidator, createUserInfo, signupEndpoint);
 router.post("/login", loginValidator, loadUserInfo, issueToken);
 router.post("/:id/logout", verifyToken, removeRefreshToken);
 router.get("/:id/serverlists", verifyToken, loadServerName);
-router.post("/:id/serverlists", createServerInfo);
+router.post(
+  "/:id/serverlists",
+  verifyToken,
+  serverInfoValidator,
+  createServerInfo,
+);
 
 module.exports = router;

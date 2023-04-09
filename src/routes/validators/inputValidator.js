@@ -39,6 +39,11 @@ const loginSchema = Joi.object().keys({
     .required(),
 });
 
+const serverSchema = Joi.object().keys({
+  serverName: Joi.string().required(),
+  url: Joi.string().trim().domain().required(),
+});
+
 exports.signupValidator = (req, res, next) => {
   const validation = signupSchema.validate(req.body);
 
@@ -87,6 +92,30 @@ exports.loginValidator = (req, res, next) => {
       res.send({
         result: "error",
         message: "유효하지 않은 비밀번호입니다.",
+      });
+      return;
+    }
+  }
+
+  next();
+};
+
+exports.serverInfoValidator = (req, res, next) => {
+  const validation = serverSchema.validate(req.body);
+
+  if (validation.error) {
+    if (validation.error.message.includes("serverName")) {
+      res.send({
+        result: "error",
+        message: "유효하지 않은 서버이름입니다.",
+      });
+      return;
+    }
+
+    if (validation.error.message.includes("url")) {
+      res.send({
+        result: "error",
+        message: "유효하지 않은 서버주소입니다.",
       });
       return;
     }
