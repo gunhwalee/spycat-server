@@ -14,17 +14,17 @@ const {
   createServerInfo,
 } = require("./middlewares/serverHandler");
 const { signupEndpoint } = require("./controllers/user.controller");
-const { issueToken, verifyToken } = require("./validators/jwt");
+const { issueToken, checkToken } = require("./validators/jwt");
 
 const router = express.Router();
 
 router.post("/", signupValidator, createUserInfo, signupEndpoint);
 router.post("/login", loginValidator, loadUserInfo, issueToken);
-router.post("/:id/logout", verifyToken, removeRefreshToken);
-router.get("/:id/serverlists", verifyToken, loadServerName);
+router.post("/:id/logout", checkToken, removeRefreshToken);
+router.get("/:id/serverlists", checkToken, loadServerName);
 router.post(
   "/:id/serverlists",
-  verifyToken,
+  checkToken,
   serverInfoValidator,
   createServerInfo,
 );

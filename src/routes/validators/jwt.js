@@ -33,42 +33,54 @@ exports.issueToken = async (req, res, next) => {
   }
 };
 
-exports.verifyToken = async (req, res, next) => {
+const accessTokenVerify = token => {
+  try {
+    const decode = jwt.verify(token, process.env.ACCESS_TOKEN);
+    return decode.id;
+  } catch (err) {
+    if (err.name === "TokenExpiredError") return null;
+  }
+};
+
+const refreshTokenVerify = async (token, id) => {
+  try {
+    const user = await User.findById(id);
+    if (token === user.refreshToken) {
+      jwt.verify(token, process.env.REFRESH_TOKEN);
+      const newAccessToken = jwt.sign({ id }, process.env.ACCESS_TOKEN, {
+        expiresIn: "30m",
+      });
+
+      return newAccessToken;
+    }
+  } catch (err) {
+    throw Error(500);
+  }
+};
+
+exports.checkToken = async (req, res, next) => {
   const { accessToken, refreshToken } = req.cookies;
 
-  try {
-    if (accessToken && refreshToken) {
-      const payload = jwt.verify(accessToken, process.env.ACCESS_TOKEN);
+  if (accessToken && refreshToken) {
+    const payload = accessTokenVerify(accessToken);
 
-      if (payload) {
-        req.user = payload.id;
-        return next();
-      }
-
-      const hasRefresh = await User.findOne({ refreshToken });
-      if (hasRefresh) {
-        const { id } = hasRefresh;
-        const newAccessToken = jwt.sign({ id }, process.env.ACCESS_TOKEN, {
-          expiresIn: "30m",
-        });
-        req.user = id;
-        res.cookie("accessToken", newAccessToken, {
-          httpOnly: true,
-        });
-
-        return next();
-      }
+    if (payload) {
+      req.user = payload;
+      return next();
     }
 
-    res.send({
-      result: "error",
-      message: "서버 접속이 원활하지 않습니다. 다시 로그인 해주세요",
+    const newAccessToken = refreshTokenVerify(refreshToken, req.params.id);
+
+    req.user = req.params.id;
+    res.cookie("accessToken", newAccessToken, {
+      httpOnly: true,
     });
-  } catch (err) {
-    console.error(err);
-    return res.send({
-      result: "error",
-      message: "서버 접속이 원활하지 않습니다. 다시 로그인 해주세요",
-    });
+
+    return next();
   }
+
+  res.send({
+    result: "error",
+    message: "서버 접속이 원활하지 않습니다. 다시 로그인 해주세요",
+  });
 };
