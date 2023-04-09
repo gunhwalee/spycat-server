@@ -3,7 +3,7 @@ const User = require("../../../models/User");
 
 exports.issueToken = async (req, res, next) => {
   const accessToken = jwt.sign({ id: req.user }, process.env.ACCESS_TOKEN, {
-    expiresIn: "15m",
+    expiresIn: "30m",
   });
 
   const refreshToken = jwt.sign({ id: req.user }, process.env.REFRESH_TOKEN, {
@@ -34,9 +34,9 @@ exports.issueToken = async (req, res, next) => {
 };
 
 exports.verifyToken = async (req, res, next) => {
-  try {
-    const { accessToken, refreshToken } = req.cookies;
+  const { accessToken, refreshToken } = req.cookies;
 
+  try {
     if (accessToken && refreshToken) {
       const payload = jwt.verify(accessToken, process.env.ACCESS_TOKEN);
 
@@ -49,7 +49,7 @@ exports.verifyToken = async (req, res, next) => {
       if (hasRefresh) {
         const { id } = hasRefresh;
         const newAccessToken = jwt.sign({ id }, process.env.ACCESS_TOKEN, {
-          expiresIn: "15m",
+          expiresIn: "30m",
         });
         req.user = id;
         res.cookie("accessToken", newAccessToken, {
@@ -60,6 +60,7 @@ exports.verifyToken = async (req, res, next) => {
       }
     }
   } catch (err) {
+    console.error(err);
     return res.send({
       result: "error",
       message: "서버 접속이 원활하지 않습니다. 다시 로그인 해주세요",
