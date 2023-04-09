@@ -11,6 +11,14 @@ const checkId = async id => {
   }
 };
 
+const updateInfo = async (id, obj) => {
+  try {
+    await User.findByIdAndUpdate(id, obj);
+  } catch (err) {
+    throw Error(500);
+  }
+};
+
 exports.saveUserInfo = async (req, res, next) => {
   const { id, pw, name } = req.body;
 
@@ -53,9 +61,27 @@ exports.loadUserInfo = async (req, res, next) => {
         message: "비밀번호가 올바르지 않습니다.",
       });
     }
+
+    req.user = user._id;
   } catch (err) {
     return next(err);
   }
 
   next();
+};
+
+exports.removeRefreshToken = async (req, res, next) => {
+  const { id } = req.params;
+  const obj = { refreshToken: null };
+
+  try {
+    await updateInfo(id, obj);
+
+    res.clearCookie("accessToken").clearCookie("refreshToken").send({
+      result: "ok",
+      message: "로그아웃이 정상처리 됐습니다.",
+    });
+  } catch (err) {
+    return next(err);
+  }
 };
