@@ -59,6 +59,11 @@ exports.verifyToken = async (req, res, next) => {
         return next();
       }
     }
+
+    res.send({
+      result: "error",
+      message: "서버 접속이 원활하지 않습니다. 다시 로그인 해주세요",
+    });
   } catch (err) {
     console.error(err);
     return res.send({

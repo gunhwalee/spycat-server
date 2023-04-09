@@ -19,7 +19,7 @@ const updateInfo = async (id, obj) => {
   }
 };
 
-exports.saveUserInfo = async (req, res, next) => {
+exports.createUserInfo = async (req, res, next) => {
   const { id, pw, name } = req.body;
 
   try {
@@ -32,8 +32,7 @@ exports.saveUserInfo = async (req, res, next) => {
     }
 
     const hash = await bcrypt.hash(pw, Number(process.env.SALT));
-    const user = new User({ id, pw: hash, name });
-    await user.save();
+    await User.create({ id, pw: hash, name });
   } catch (err) {
     return next(err);
   }
