@@ -12,7 +12,7 @@ exports.issueToken = async (req, res, next) => {
 
   try {
     const user = await User.findByIdAndUpdate(req.user, { refreshToken });
-    const { name } = user;
+    const { name, apikey } = user;
 
     res
       .status(201)
@@ -26,7 +26,7 @@ exports.issueToken = async (req, res, next) => {
         result: "ok",
         message: "정상적으로 로그인됐습니다.",
         name,
-        apikey: req.user,
+        apikey,
       });
   } catch (err) {
     return next(err);
@@ -44,14 +44,18 @@ const accessTokenVerify = token => {
 
 const refreshTokenVerify = async (token, id) => {
   try {
-    const user = await User.findById(id);
+    const user = await User.findOne(id);
     if (token === user.refreshToken) {
       jwt.verify(token, process.env.REFRESH_TOKEN);
-      const newAccessToken = jwt.sign({ id }, process.env.ACCESS_TOKEN, {
-        expiresIn: "30m",
-      });
+      const newAccessToken = jwt.sign(
+        { id: user._id },
+        process.env.ACCESS_TOKEN,
+        {
+          expiresIn: "30m",
+        },
+      );
 
-      return newAccessToken;
+      return { newAccessToken, refreshPayload: user._id };
     }
   } catch (err) {
     throw Error(500);
@@ -69,9 +73,12 @@ exports.checkToken = async (req, res, next) => {
       return next();
     }
 
-    const newAccessToken = refreshTokenVerify(refreshToken, req.params.id);
+    const { newAccessToken, refreshPayload } = refreshTokenVerify(
+      refreshToken,
+      req.params.id,
+    );
 
-    req.user = req.params.id;
+    req.user = refreshPayload;
     res.cookie("accessToken", newAccessToken, {
       httpOnly: true,
     });

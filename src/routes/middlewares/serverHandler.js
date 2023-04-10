@@ -26,7 +26,7 @@ exports.loadServerName = async (req, res, next) => {
 };
 
 exports.createServerInfo = async (req, res, next) => {
-  const userId = req.params.id;
+  const apikey = req.params.id;
   const { serverName, url } = req.body;
 
   try {
@@ -39,11 +39,14 @@ exports.createServerInfo = async (req, res, next) => {
       });
     }
 
+    const user = await User.findOne({ apikey });
     const server = await Server.create({ serverName, url });
-    const user = await User.findById(userId);
-    await User.findByIdAndUpdate(userId, {
-      servers: [...user.servers, server._id],
-    });
+    await User.findOneAndUpdate(
+      { apikey },
+      {
+        servers: [...user.servers, server._id],
+      },
+    );
   } catch (err) {
     return next(err);
   }
