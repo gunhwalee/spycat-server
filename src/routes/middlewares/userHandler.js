@@ -63,7 +63,7 @@ exports.loadUserInfo = async (req, res, next) => {
       });
     }
 
-    req.user = user.apikey;
+    req.user = user._id;
   } catch (err) {
     return next(err);
   }
@@ -72,11 +72,11 @@ exports.loadUserInfo = async (req, res, next) => {
 };
 
 exports.removeRefreshToken = async (req, res, next) => {
-  const { id } = req.params;
+  const { apikey } = req.params;
   const obj = { refreshToken: null };
 
   try {
-    await updateInfo(id, obj);
+    await User.findOneAndUpdate(apikey, obj);
 
     res.clearCookie("accessToken").clearCookie("refreshToken").send({
       result: "ok",
