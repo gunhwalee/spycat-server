@@ -12,6 +12,7 @@ const {
 const {
   loadServerName,
   createServerInfo,
+  updateServerInfo,
 } = require("./middlewares/serverHandler");
 const { signupEndpoint } = require("./controllers/user.controller");
 const { issueToken, checkToken } = require("./validators/jwt");
@@ -28,5 +29,6 @@ router.post(
   serverInfoValidator,
   createServerInfo,
 );
+router.post("/:id/servers/:serverid/traffics", updateServerInfo);
 
 module.exports = router;

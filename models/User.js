@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   servers: [{ type: mongoose.Schema.Types.ObjectId, ref: "Server" }],
   refreshToken: { type: String },
+  apikey: { type: String, require: true, unique: true },
 });
 
 module.exports = mongoose.model("User", userSchema);

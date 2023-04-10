@@ -26,7 +26,7 @@ exports.issueToken = async (req, res, next) => {
         result: "ok",
         message: "정상적으로 로그인됐습니다.",
         name,
-        id: req.user,
+        apikey: req.user,
       });
   } catch (err) {
     return next(err);

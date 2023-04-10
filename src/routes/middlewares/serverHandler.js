@@ -1,5 +1,6 @@
 const User = require("../../../models/User");
 const Server = require("../../../models/Server");
+const Traffic = require("../../../models/Traffic");
 
 const checkUrl = async url => {
   try {
@@ -50,5 +51,45 @@ exports.createServerInfo = async (req, res, next) => {
   res.send({
     result: "ok",
     message: "서버가 정상적으로 추가됐습니다.",
+  });
+};
+
+exports.updateServerInfo = async (req, res, next) => {
+  const { id: apikey, serverid: url } = req.params;
+  const { type, path, host } = req.body;
+
+  try {
+    const hasAPI = await User.findOne({ apikey });
+    const server = await Server.findOne({ url });
+
+    if (!hasAPI) {
+      res.send({
+        result: "error",
+        message: "인증되지 않은 API Key입니다.",
+      });
+      return;
+    }
+
+    if (!server) {
+      res.send({
+        result: "error",
+        message: "등록된 서버와 상이합니다. 서버목록을 확인해주세요.",
+      });
+      return;
+    }
+
+    const traffic = await Traffic.create({ path, host });
+    await Server.findOneAndUpdate(
+      { url },
+      {
+        traffics: [...server.traffics, traffic._id],
+      },
+    );
+  } catch (err) {
+    return next(err);
+  }
+
+  res.send({
+    result: "ok",
   });
 };
