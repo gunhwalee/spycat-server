@@ -4,6 +4,7 @@ const { joiPasswordExtendCore } = require("joi-password");
 const joipassword = Joi.extend(joiPasswordExtendCore);
 
 const signupSchema = Joi.object().keys({
+  name: Joi.string().min(1).max(10).required(),
   id: Joi.string().email().required().trim(),
   pw: joipassword
     .string()
@@ -23,7 +24,6 @@ const signupSchema = Joi.object().keys({
     .min(8)
     .max(16)
     .required(),
-  name: Joi.string().max(10).required(),
 });
 
 const loginSchema = Joi.object().keys({
@@ -48,6 +48,14 @@ exports.signupValidator = (req, res, next) => {
   const validation = signupSchema.validate(req.body);
 
   if (validation.error) {
+    if (validation.error.message.includes("name")) {
+      res.send({
+        result: "error",
+        message: "유효하지 않은 이름입니다. 규칙을 확인해주세요.",
+      });
+      return;
+    }
+
     if (validation.error.message.includes("id")) {
       res.send({
         result: "error",
@@ -60,14 +68,6 @@ exports.signupValidator = (req, res, next) => {
       res.send({
         result: "error",
         message: "유효하지 않은 비밀번호입니다. 규칙을 확인해주세요.",
-      });
-      return;
-    }
-
-    if (validation.error.message.includes("name")) {
-      res.send({
-        result: "error",
-        message: "유효하지 않은 이름입니다. 규칙을 확인해주세요.",
       });
       return;
     }

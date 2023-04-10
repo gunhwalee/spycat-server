@@ -4,7 +4,7 @@ const serverSchema = new mongoose.Schema({
   serverName: { type: String, required: true, trim: true },
   url: { type: String, required: true, trim: true, unique: true },
   traffics: [{ type: mongoose.Schema.Types.ObjectId, ref: "Traffic" }],
-  errorsList: [{ type: mongoose.Schema.Types.ObjectId, ref: "Error" }],
+  errorLists: [{ type: mongoose.Schema.Types.ObjectId, ref: "ServerError" }],
 });
 
 module.exports = mongoose.model("Server", serverSchema);
