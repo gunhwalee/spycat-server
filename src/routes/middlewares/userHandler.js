@@ -1,4 +1,5 @@
 const bcrypt = require("bcrypt");
+const { v4: uuidv4 } = require("uuid");
 const User = require("../../../models/User");
 
 const checkId = async id => {
@@ -32,7 +33,8 @@ exports.createUserInfo = async (req, res, next) => {
     }
 
     const hash = await bcrypt.hash(pw, Number(process.env.SALT));
-    await User.create({ id, pw: hash, name });
+    const apikey = uuidv4();
+    await User.create({ id, pw: hash, name, apikey });
   } catch (err) {
     return next(err);
   }
@@ -61,7 +63,7 @@ exports.loadUserInfo = async (req, res, next) => {
       });
     }
 
-    req.user = user._id;
+    req.user = user.apikey;
   } catch (err) {
     return next(err);
   }
