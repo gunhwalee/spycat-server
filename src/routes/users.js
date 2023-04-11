@@ -30,5 +30,6 @@ router.post(
   createServerInfo,
 );
 router.post("/:id/servers/:serverid/traffics", updateServerInfo);
+router.post("/:id/servers/:serverid/errors", updateServerInfo);
 
 module.exports = router;

@@ -1,6 +1,7 @@
 const User = require("../../../models/User");
 const Server = require("../../../models/Server");
 const Traffic = require("../../../models/Traffic");
+const ServerError = require("../../../models/Error");
 
 const checkUrl = async url => {
   try {
@@ -59,7 +60,7 @@ exports.createServerInfo = async (req, res, next) => {
 
 exports.updateServerInfo = async (req, res, next) => {
   const { id: apikey, serverid: url } = req.params;
-  const { type, path, host } = req.body;
+  const { type, path, host, errorInfo } = req.body;
 
   try {
     const hasAPI = await User.findOne({ apikey });
@@ -81,13 +82,25 @@ exports.updateServerInfo = async (req, res, next) => {
       return;
     }
 
-    const traffic = await Traffic.create({ path, host });
-    await Server.findOneAndUpdate(
-      { url },
-      {
-        traffics: [...server.traffics, traffic._id],
-      },
-    );
+    if (type === "traffic") {
+      const traffic = await Traffic.create({ path, host });
+      await Server.findOneAndUpdate(
+        { url },
+        {
+          traffics: [...server.traffics, traffic._id],
+        },
+      );
+    }
+
+    if (type === "error") {
+      const serverError = await ServerError.create({ path, host, errorInfo });
+      await Server.findOneAndUpdate(
+        { url },
+        {
+          errorLists: [...server.errorLists, serverError._id],
+        },
+      );
+    }
   } catch (err) {
     return next(err);
   }
