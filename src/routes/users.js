@@ -4,6 +4,8 @@ const {
   loginValidator,
   serverInfoValidator,
 } = require("./validators/inputValidator");
+const { issueToken, checkToken } = require("./validators/jwt");
+const { apiValidator } = require("./validators/apiValidator");
 const {
   createUserInfo,
   loadUserInfo,
@@ -12,10 +14,9 @@ const {
 const {
   loadServerName,
   createServerInfo,
-  updateServerInfo,
 } = require("./middlewares/serverHandler");
 const { signupEndpoint } = require("./controllers/user.controller");
-const { issueToken, checkToken } = require("./validators/jwt");
+const serverRouter = require("./server");
 
 const router = express.Router();
 
@@ -29,7 +30,6 @@ router.post(
   serverInfoValidator,
   createServerInfo,
 );
-router.post("/:id/servers/:serverid/traffics", updateServerInfo);
-router.post("/:id/servers/:serverid/errors", updateServerInfo);
+router.use("/:id/servers", apiValidator, serverRouter);
 
 module.exports = router;
