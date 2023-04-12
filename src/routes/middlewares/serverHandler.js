@@ -59,25 +59,16 @@ exports.createServerInfo = async (req, res, next) => {
 };
 
 exports.updateServerInfo = async (req, res, next) => {
-  const { id: apikey, serverid: url } = req.params;
+  const url = req.params.serverid;
   const { type, path, host, errorInfo } = req.body;
 
   try {
-    const hasAPI = await User.findOne({ apikey });
     const server = await Server.findOne({ url });
-
-    if (!hasAPI) {
-      res.send({
-        result: "error",
-        message: "인증되지 않은 API Key입니다.",
-      });
-      return;
-    }
 
     if (!server) {
       res.send({
         result: "error",
-        message: "등록된 서버와 상이합니다. 서버목록을 확인해주세요.",
+        message: "등록된 서버가 없습니다. 서버주소를 다시 확인해주세요.",
       });
       return;
     }
@@ -108,4 +99,27 @@ exports.updateServerInfo = async (req, res, next) => {
   res.send({
     result: "ok",
   });
+};
+
+exports.loadServerInfo = async (req, res, next) => {
+  const url = req.params.serverid;
+
+  try {
+    const server = await Server.findOne({ url }).populate("traffics");
+
+    if (!server) {
+      res.send({
+        result: "error",
+        message: "등록된 서버가 없습니다. 서버주소를 다시 확인해주세요.",
+      });
+      return;
+    }
+
+    res.send({
+      result: "ok",
+      traffics: server.traffics,
+    });
+  } catch (err) {
+    return next(err);
+  }
 };
