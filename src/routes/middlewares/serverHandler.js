@@ -68,7 +68,15 @@ exports.updateServerInfo = async (req, res, next) => {
     if (!server) {
       res.send({
         result: "error",
-        message: "등록된 서버가 없습니다. 서버주소를 다시 확인해주세요.",
+        message: "등록된 서버가 없습니다.",
+      });
+      return;
+    }
+
+    if (url !== host) {
+      res.send({
+        result: "error",
+        message: "서버주소를 다시 확인해주세요.",
       });
       return;
     }
@@ -117,6 +125,8 @@ exports.loadServerInfo = async (req, res, next) => {
 
     res.send({
       result: "ok",
+      serverName: server.serverName,
+      url: server.url,
       traffics: server.traffics,
     });
   } catch (err) {
