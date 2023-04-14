@@ -60,7 +60,7 @@ exports.createServerInfo = async (req, res, next) => {
 
 exports.updateServerInfo = async (req, res, next) => {
   const url = req.params.serverid;
-  const { type, path, host, errorInfo } = req.body;
+  const { type, path, host, errorName, errorMessage, errorStack } = req.body;
 
   try {
     const server = await Server.findOne({ url });
@@ -92,7 +92,13 @@ exports.updateServerInfo = async (req, res, next) => {
     }
 
     if (type === "error") {
-      const serverError = await ServerError.create({ path, host, errorInfo });
+      const serverError = await ServerError.create({
+        path,
+        host,
+        errorName,
+        errorMessage,
+        errorStack,
+      });
       await Server.findOneAndUpdate(
         { url },
         {
@@ -109,7 +115,7 @@ exports.updateServerInfo = async (req, res, next) => {
   });
 };
 
-exports.loadServerInfo = async (req, res, next) => {
+exports.loadTrafficInfo = async (req, res, next) => {
   const url = req.params.serverid;
 
   try {
@@ -128,6 +134,31 @@ exports.loadServerInfo = async (req, res, next) => {
       serverName: server.serverName,
       url: server.url,
       traffics: server.traffics,
+    });
+  } catch (err) {
+    return next(err);
+  }
+};
+
+exports.loadErrorInfo = async (req, res, next) => {
+  const url = req.params.serverid;
+
+  try {
+    const server = await Server.findOne({ url }).populate("errorLists");
+
+    if (!server) {
+      res.send({
+        result: "error",
+        message: "등록된 서버가 없습니다. 서버주소를 다시 확인해주세요.",
+      });
+      return;
+    }
+
+    res.send({
+      result: "ok",
+      serverName: server.serverName,
+      url: server.url,
+      errorLists: server.errorLists,
     });
   } catch (err) {
     return next(err);

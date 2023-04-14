@@ -4,11 +4,9 @@ const { getCurrentDate } = require("../src/uilts/getCurrentDate");
 const errorSchema = new mongoose.Schema({
   path: { type: String, required: true, trim: true },
   host: { type: String, required: true, trim: true },
-  errorInfo: {
-    type: { type: String, required: true },
-    message: { type: String, required: true },
-    stack: { type: String, required: true },
-  },
+  errorName: { type: String },
+  errorMessage: { type: String, required: true },
+  errorStack: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
   expiredAt: { type: Date, expireAfterSeconds: 1 },
 });
