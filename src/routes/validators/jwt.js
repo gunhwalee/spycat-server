@@ -12,7 +12,7 @@ exports.issueToken = async (req, res, next) => {
 
   try {
     const user = await User.findByIdAndUpdate(req.user, { refreshToken });
-    const { name, apikey } = user;
+    const { name, apikey, id } = user;
 
     res
       .status(201)
@@ -27,6 +27,7 @@ exports.issueToken = async (req, res, next) => {
         message: "정상적으로 로그인됐습니다.",
         name,
         apikey,
+        id,
       });
   } catch (err) {
     return next(err);
@@ -44,7 +45,8 @@ const accessTokenVerify = token => {
 
 const refreshTokenVerify = async (token, id) => {
   try {
-    const user = await User.findOne(id);
+    const user = await User.findOne({ apikey: id });
+
     if (token === user.refreshToken) {
       jwt.verify(token, process.env.REFRESH_TOKEN);
       const newAccessToken = jwt.sign(
@@ -65,12 +67,14 @@ const refreshTokenVerify = async (token, id) => {
 exports.checkToken = async (req, res, next) => {
   const { accessToken, refreshToken } = req.cookies;
 
-  if (accessToken && refreshToken) {
-    const payload = accessTokenVerify(accessToken);
+  try {
+    if (accessToken && refreshToken) {
+      const payload = accessTokenVerify(accessToken);
 
-    if (payload) {
-      req.user = payload;
-      return next();
+      if (payload) {
+        req.user = payload;
+        return next();
+      }
     }
 
     const { newAccessToken, refreshPayload } = refreshTokenVerify(
@@ -84,10 +88,10 @@ exports.checkToken = async (req, res, next) => {
     });
 
     return next();
+  } catch (err) {
+    res.send({
+      result: "error",
+      message: "서버 접속이 원활하지 않습니다. 다시 로그인 해주세요",
+    });
   }
-
-  res.send({
-    result: "error",
-    message: "서버 접속이 원활하지 않습니다. 다시 로그인 해주세요",
-  });
 };

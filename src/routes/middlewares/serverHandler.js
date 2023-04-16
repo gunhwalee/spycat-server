@@ -19,7 +19,7 @@ exports.loadServerName = async (req, res, next) => {
 
     res.send({
       result: "ok",
-      serverList: user.servers,
+      servers: user.servers,
     });
   } catch (err) {
     return next(err);

@@ -12,14 +12,6 @@ const checkId = async id => {
   }
 };
 
-const updateInfo = async (id, obj) => {
-  try {
-    await User.findByIdAndUpdate(id, obj);
-  } catch (err) {
-    throw Error(500);
-  }
-};
-
 exports.createUserInfo = async (req, res, next) => {
   const { id, pw, name } = req.body;
 

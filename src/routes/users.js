@@ -5,7 +5,7 @@ const {
   serverInfoValidator,
 } = require("./validators/inputValidator");
 const { issueToken, checkToken } = require("./validators/jwt");
-const { apiValidator } = require("./validators/apiValidator");
+const { apiValidator, regenerateApi } = require("./validators/apiValidator");
 const {
   createUserInfo,
   loadUserInfo,

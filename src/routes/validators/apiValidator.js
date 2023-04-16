@@ -1,15 +1,16 @@
+const { v4: uuidv4 } = require("uuid");
 const User = require("../../../models/User");
 
 exports.apiValidator = async (req, res, next) => {
   const apikey = req.params.id;
 
   try {
-    const hasAPI = await User.findOne({ apikey }).populate("servers");
+    const hasAPI = await User.findOne({ apikey });
 
     if (!hasAPI) {
       res.send({
         result: "error",
-        message: "인증되지 않은 사용자입니다. API Key를 확인해주세요.",
+        message: "API Key를 확인해주세요.",
       });
       return;
     }
