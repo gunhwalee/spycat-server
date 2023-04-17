@@ -17,5 +17,7 @@ exports.apiValidator = async (req, res, next) => {
   } catch (err) {
     return next(err);
   }
+
+  req.user = apikey;
   next();
 };

@@ -16,7 +16,6 @@ const checkUrl = async url => {
 exports.loadServerName = async (req, res, next) => {
   try {
     const user = await User.findById(req.user).populate("servers");
-
     res.send({
       result: "ok",
       servers: user.servers,
@@ -163,4 +162,20 @@ exports.loadErrorInfo = async (req, res, next) => {
   } catch (err) {
     return next(err);
   }
+};
+
+exports.deleteServerInfo = async (req, res, next) => {
+  const url = req.params.serverid;
+
+  try {
+    await Server.findOneAndDelete({ url });
+    const user = await User.findOne({ apikey: req.user }).populate("servers");
+    const newServers = user.servers.filter(element => element.url !== url);
+    await User.findByIdAndUpdate(user._id, { servers: newServers });
+  } catch (err) {
+    return next(err);
+  }
+  console.log(req.user, url);
+
+  res.send({ result: "ok" });
 };

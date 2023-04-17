@@ -77,7 +77,7 @@ exports.checkToken = async (req, res, next) => {
       }
     }
 
-    const { newAccessToken, refreshPayload } = refreshTokenVerify(
+    const { newAccessToken, refreshPayload } = await refreshTokenVerify(
       refreshToken,
       req.params.id,
     );
