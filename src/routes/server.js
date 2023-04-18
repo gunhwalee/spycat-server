@@ -6,13 +6,14 @@ const {
   loadErrorInfo,
   deleteServerInfo,
 } = require("./middlewares/serverHandler");
+const { checkToken } = require("./validators/jwt");
 
 const router = express.Router();
 
-router.get("/:serverid/traffics", loadTrafficInfo);
+router.get("/:serverid/traffics", checkToken, loadTrafficInfo);
 router.post("/:serverid/traffics", updateServerInfo);
-router.get("/:serverid/errors", loadErrorInfo);
+router.get("/:serverid/errors", checkToken, loadErrorInfo);
 router.post("/:serverid/errors", updateServerInfo);
-router.patch("/:serverid", deleteServerInfo);
+router.patch("/:serverid", checkToken, deleteServerInfo);
 
 module.exports = router;

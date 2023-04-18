@@ -18,6 +18,20 @@ exports.apiValidator = async (req, res, next) => {
     return next(err);
   }
 
-  req.user = apikey;
   next();
+};
+
+exports.regenerateKey = async (req, res, next) => {
+  const newApiKey = uuidv4();
+
+  try {
+    await User.findByIdAndUpdate(req.user, { apikey: newApiKey });
+  } catch (err) {
+    return next(err);
+  }
+
+  res.send({
+    result: "ok",
+    apikey: newApiKey,
+  });
 };

@@ -169,7 +169,7 @@ exports.deleteServerInfo = async (req, res, next) => {
 
   try {
     await Server.findOneAndDelete({ url });
-    const user = await User.findOne({ apikey: req.user }).populate("servers");
+    const user = await User.findById(req.user).populate("servers");
     const newServers = user.servers.filter(element => element.url !== url);
     await User.findByIdAndUpdate(user._id, { servers: newServers });
   } catch (err) {

@@ -5,7 +5,7 @@ const {
   serverInfoValidator,
 } = require("./validators/inputValidator");
 const { issueToken, checkToken } = require("./validators/jwt");
-const { apiValidator, regenerateApi } = require("./validators/apiValidator");
+const { apiValidator, regenerateKey } = require("./validators/apiValidator");
 const {
   createUserInfo,
   loadUserInfo,
@@ -30,6 +30,7 @@ router.post(
   serverInfoValidator,
   createServerInfo,
 );
+router.post("/:id/apikeys", checkToken, regenerateKey);
 router.use("/:id/servers", apiValidator, serverRouter);
 
 module.exports = router;
