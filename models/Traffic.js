@@ -6,6 +6,7 @@ const trafficSchema = new mongoose.Schema({
   host: { type: String, required: true, trim: true },
   createdAt: { type: Date, default: Date.now },
   expiredAt: { type: Date, expireAfterSeconds: 1 },
+  server: { type: mongoose.Schema.Types.ObjectId, ref: "Server" },
 });
 
 const Traffic = mongoose.model("Traffic", trafficSchema);

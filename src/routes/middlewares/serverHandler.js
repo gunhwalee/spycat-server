@@ -81,7 +81,7 @@ exports.updateServerInfo = async (req, res, next) => {
     }
 
     if (type === "traffic") {
-      const traffic = await Traffic.create({ path, host });
+      const traffic = await Traffic.create({ path, host, server: server._id });
       await Server.findOneAndUpdate(
         { url },
         {
@@ -97,6 +97,7 @@ exports.updateServerInfo = async (req, res, next) => {
         errorName,
         errorMessage,
         errorStack,
+        server: server._id,
       });
       await Server.findOneAndUpdate(
         { url },
@@ -111,6 +112,7 @@ exports.updateServerInfo = async (req, res, next) => {
 
   res.send({
     result: "ok",
+    message: "전송된 정보가 서버에 정상등록 됐습니다.",
   });
 };
 
@@ -168,14 +170,21 @@ exports.deleteServerInfo = async (req, res, next) => {
   const url = req.params.serverid;
 
   try {
+    const server = await Server.findOne({ url });
+
     await Server.findOneAndDelete({ url });
-    const user = await User.findById(req.user).populate("servers");
-    const newServers = user.servers.filter(element => element.url !== url);
+    await Traffic.findOneAndDelete({ server: server._id });
+    await ServerError.findOneAndDelete({ server: server._id });
+
+    const user = await User.findById(req.user);
+    const newServers = user.servers.filter(
+      element => !element.equals(server._id),
+    );
+
     await User.findByIdAndUpdate(user._id, { servers: newServers });
   } catch (err) {
     return next(err);
   }
-  console.log(req.user, url);
 
   res.send({ result: "ok" });
 };

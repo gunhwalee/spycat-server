@@ -41,7 +41,7 @@ const loginSchema = Joi.object().keys({
 
 const serverSchema = Joi.object().keys({
   serverName: Joi.string().required(),
-  url: Joi.string().trim().domain().required(),
+  url: Joi.string().trim().required(),
 });
 
 exports.signupValidator = (req, res, next) => {
