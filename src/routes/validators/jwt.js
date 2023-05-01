@@ -12,7 +12,7 @@ exports.issueToken = async (req, res, next) => {
 
   try {
     const user = await User.findByIdAndUpdate(req.user, { refreshToken });
-    const { name, apikey, id } = user;
+    const { name, id } = user;
 
     res
       .status(201)
@@ -26,7 +26,7 @@ exports.issueToken = async (req, res, next) => {
         result: "ok",
         message: "정상적으로 로그인됐습니다.",
         name,
-        apikey,
+        _id: req.user,
         id,
       });
   } catch (err) {

@@ -5,7 +5,6 @@ const {
   serverInfoValidator,
 } = require("./validators/inputValidator");
 const { issueToken, checkToken } = require("./validators/jwt");
-const { apiValidator, regenerateKey } = require("./validators/apiValidator");
 const {
   createUserInfo,
   loadUserInfo,
@@ -16,7 +15,6 @@ const {
   createServerInfo,
 } = require("./middlewares/serverHandler");
 const { signupEndpoint } = require("./controllers/user.controller");
-const serverRouter = require("./server");
 
 const router = express.Router();
 
@@ -30,7 +28,5 @@ router.post(
   serverInfoValidator,
   createServerInfo,
 );
-router.post("/:id/apikeys", checkToken, regenerateKey);
-router.use("/:id/servers", apiValidator, serverRouter);
 
 module.exports = router;

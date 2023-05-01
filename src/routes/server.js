@@ -1,5 +1,5 @@
 const express = require("express");
-
+const { apiValidator, regenerateKey } = require("./validators/apiValidator");
 const {
   updateServerInfo,
   loadTrafficInfo,
@@ -10,10 +10,11 @@ const { checkToken } = require("./validators/jwt");
 
 const router = express.Router();
 
-router.get("/:serverid/traffics", checkToken, loadTrafficInfo);
-router.post("/:serverid/traffics", updateServerInfo);
-router.get("/:serverid/errors", checkToken, loadErrorInfo);
-router.post("/:serverid/errors", updateServerInfo);
-router.patch("/:serverid", checkToken, deleteServerInfo);
+router.get("/:apikey/traffics", apiValidator, checkToken, loadTrafficInfo);
+router.post("/:apikey/traffics", apiValidator, updateServerInfo);
+router.get("/:apikey/errors", apiValidator, checkToken, loadErrorInfo);
+router.post("/:apikey/errors", apiValidator, updateServerInfo);
+router.patch("/:url", checkToken, deleteServerInfo);
+router.patch("/apikey/:apikey", apiValidator, checkToken, regenerateKey);
 
 module.exports = router;

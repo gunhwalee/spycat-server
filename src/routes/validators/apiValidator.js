@@ -1,11 +1,12 @@
 const { v4: uuidv4 } = require("uuid");
+const Server = require("../../../models/Server");
 const User = require("../../../models/User");
 
 exports.apiValidator = async (req, res, next) => {
-  const apikey = req.params.id;
+  const { apikey } = req.params;
 
   try {
-    const hasAPI = await User.findOne({ apikey });
+    const hasAPI = await Server.findOne({ apikey });
 
     if (!hasAPI) {
       res.send({
@@ -22,16 +23,16 @@ exports.apiValidator = async (req, res, next) => {
 };
 
 exports.regenerateKey = async (req, res, next) => {
+  const { apikey } = req.params;
   const newApiKey = uuidv4();
 
   try {
-    await User.findByIdAndUpdate(req.user, { apikey: newApiKey });
+    await Server.findOneAndUpdate({ apikey }, { apikey: newApiKey });
   } catch (err) {
     return next(err);
   }
 
   res.send({
     result: "ok",
-    apikey: newApiKey,
   });
 };

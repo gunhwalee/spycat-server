@@ -1,3 +1,4 @@
+const { v4: uuidv4 } = require("uuid");
 const User = require("../../../models/User");
 const Server = require("../../../models/Server");
 const Traffic = require("../../../models/Traffic");
@@ -26,7 +27,7 @@ exports.loadServerName = async (req, res, next) => {
 };
 
 exports.createServerInfo = async (req, res, next) => {
-  const apikey = req.params.id;
+  const { id } = req.params;
   const { serverName, url } = req.body;
 
   try {
@@ -39,14 +40,12 @@ exports.createServerInfo = async (req, res, next) => {
       });
     }
 
-    const user = await User.findOne({ apikey });
-    const server = await Server.create({ serverName, url });
-    await User.findOneAndUpdate(
-      { apikey },
-      {
-        servers: [...user.servers, server._id],
-      },
-    );
+    const apikey = uuidv4();
+    const user = await User.findById(id);
+    const server = await Server.create({ serverName, url, apikey });
+    await User.findByIdAndUpdate(id, {
+      servers: [...user.servers, server._id],
+    });
   } catch (err) {
     return next(err);
   }
@@ -58,11 +57,11 @@ exports.createServerInfo = async (req, res, next) => {
 };
 
 exports.updateServerInfo = async (req, res, next) => {
-  const url = req.params.serverid;
+  const { apikey } = req.params;
   const { type, path, host, errorName, errorMessage, errorStack } = req.body;
 
   try {
-    const server = await Server.findOne({ url });
+    const server = await Server.findOne({ apikey });
 
     if (!server) {
       res.send({
@@ -72,18 +71,10 @@ exports.updateServerInfo = async (req, res, next) => {
       return;
     }
 
-    if (url !== host) {
-      res.send({
-        result: "error",
-        message: "서버주소를 다시 확인해주세요.",
-      });
-      return;
-    }
-
     if (type === "traffic") {
       const traffic = await Traffic.create({ path, host, server: server._id });
       await Server.findOneAndUpdate(
-        { url },
+        { apikey },
         {
           traffics: [...server.traffics, traffic._id],
         },
@@ -100,7 +91,7 @@ exports.updateServerInfo = async (req, res, next) => {
         server: server._id,
       });
       await Server.findOneAndUpdate(
-        { url },
+        { apikey },
         {
           errorLists: [...server.errorLists, serverError._id],
         },
@@ -117,10 +108,10 @@ exports.updateServerInfo = async (req, res, next) => {
 };
 
 exports.loadTrafficInfo = async (req, res, next) => {
-  const url = req.params.serverid;
+  const { apikey } = req.params;
 
   try {
-    const server = await Server.findOne({ url }).populate("traffics");
+    const server = await Server.findOne({ apikey }).populate("traffics");
 
     if (!server) {
       res.send({
@@ -142,10 +133,10 @@ exports.loadTrafficInfo = async (req, res, next) => {
 };
 
 exports.loadErrorInfo = async (req, res, next) => {
-  const url = req.params.serverid;
+  const { apikey } = req.params;
 
   try {
-    const server = await Server.findOne({ url }).populate("errorLists");
+    const server = await Server.findOne({ apikey }).populate("errorLists");
 
     if (!server) {
       res.send({
@@ -167,14 +158,15 @@ exports.loadErrorInfo = async (req, res, next) => {
 };
 
 exports.deleteServerInfo = async (req, res, next) => {
-  const url = req.params.serverid;
+  const { url } = req.params;
 
+  console.log(url);
   try {
     const server = await Server.findOne({ url });
 
     await Server.findOneAndDelete({ url });
-    await Traffic.findOneAndDelete({ server: server._id });
-    await ServerError.findOneAndDelete({ server: server._id });
+    await Traffic.deleteMany({ server: server._id });
+    await ServerError.deleteMany({ server: server._id });
 
     const user = await User.findById(req.user);
     const newServers = user.servers.filter(

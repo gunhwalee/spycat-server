@@ -1,5 +1,4 @@
 const bcrypt = require("bcrypt");
-const { v4: uuidv4 } = require("uuid");
 const User = require("../../../models/User");
 
 const checkId = async id => {
@@ -25,8 +24,7 @@ exports.createUserInfo = async (req, res, next) => {
     }
 
     const hash = await bcrypt.hash(pw, Number(process.env.SALT));
-    const apikey = uuidv4();
-    await User.create({ id, pw: hash, name, apikey });
+    await User.create({ id, pw: hash, name });
   } catch (err) {
     return next(err);
   }
@@ -64,11 +62,11 @@ exports.loadUserInfo = async (req, res, next) => {
 };
 
 exports.removeRefreshToken = async (req, res, next) => {
-  const { apikey } = req.params;
+  const { id } = req.params;
   const obj = { refreshToken: null };
 
   try {
-    await User.findOneAndUpdate(apikey, obj);
+    await User.findByIdAndUpdate(id, obj);
 
     res.clearCookie("accessToken").clearCookie("refreshToken").send({
       result: "ok",
