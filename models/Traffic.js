@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const { getCurrentDate } = require("../src/uilts/getCurrentDate");
 
 const trafficSchema = new mongoose.Schema({
   path: { type: String, required: true, trim: true },
