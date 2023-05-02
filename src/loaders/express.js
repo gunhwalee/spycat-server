@@ -6,7 +6,7 @@ const cookieParser = require("cookie-parser");
 const expressLoader = async app => {
   app.use(
     cors({
-      origin: "https://spycat.netlify.app/",
+      origin: ["https://spycat.netlify.app/", "http://localhost:3000"],
       credentials: true,
     }),
   );
