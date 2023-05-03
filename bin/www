@@ -2,35 +2,21 @@ const http = require("http");
 const debug = require("debug")("spycat-server:server");
 const app = require("../app");
 
-const port = normalizePort(process.env.PORT || "4000");
-app.set("port", port);
+const PORT = process.env.PORT || "8080";
+app.set("port", PORT);
 
 const server = http.createServer(app);
 
-server.listen(port);
+server.listen(PORT);
 server.on("error", onError);
 server.on("listening", onListening);
-
-function normalizePort(val) {
-  const portNumber = parseInt(val, 10);
-
-  if (Number.isNaN(portNumber)) {
-    return val;
-  }
-
-  if (portNumber >= 0) {
-    return portNumber;
-  }
-
-  return false;
-}
 
 function onError(error) {
   if (error.syscall !== "listen") {
     throw error;
   }
 
-  const bind = typeof port === "string" ? `Pipe ${port}` : `Port ${port}`;
+  const bind = typeof port === "string" ? `Pipe ${PORT}` : `Port ${PORT}`;
 
   switch (error.code) {
     case "EACCES":
