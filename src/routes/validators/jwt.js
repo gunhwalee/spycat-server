@@ -18,13 +18,9 @@ exports.issueToken = async (req, res, next) => {
       .status(201)
       .cookie("accessToken", accessToken, {
         httpOnly: true,
-        sameSite: "None",
-        secure: true,
       })
       .cookie("refreshToken", refreshToken, {
         httpOnly: true,
-        sameSite: "None",
-        secure: true,
       })
       .send({
         result: "ok",
