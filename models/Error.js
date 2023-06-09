@@ -18,7 +18,6 @@ ServerError.watch().on("change", async change => {
   if (change.operationType === "insert") {
     const { _id } = change.documentKey;
     const expiredAt = new Date(Date.now());
-    console.log(expiredAt);
     expiredAt.setSeconds(expiredAt.getSeconds() + 60 * 60 * 24 * 28);
 
     await ServerError.findByIdAndUpdate(_id, {
