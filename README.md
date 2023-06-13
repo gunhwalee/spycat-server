@@ -15,14 +15,13 @@ Spy Cat에서 자신의 서버를 등록하고, 간단한 미들웨어 함수를
     - [SVG vs Canvas API](#1-svg-vs-canvas-api)
     - [차트를 그릴 데이터를 어떻게 정리할까?](#2-차트를-그릴-데이터를-어떻게-정리할까)
   - [어떻게 실사용 서비스처럼 만들 수 있을까?](#3-어떻게-실사용-서비스처럼-만들-수-있을까)
-    - [사용자 경험(UX)을 적용해 보자](#1-사용자-경험ux을-적용해-보자)
-    - [무분별한 서버요청을 차단해 보자](#2-무분별한-서버요청을-차단해-보자)
-    - [UI를 사용자 친화적으로 만들어보자](#3-ui를-사용자-친화적으로-만들어보자)
+    - [무분별한 서버요청을 차단해 보자](#1-무분별한-서버요청을-차단해-보자)
+    - [UI를 사용자 친화적으로 만들어보자](#2-ui를-사용자-친화적으로-만들어보자)
   - [클라이언트와 서버의 통신문제?](#4-클라이언트와-서버의-통신문제)
-    - [CORS 문제](#1-cors-문제)
-    - [로그인 쿠키 문제](#2-로그인-쿠키-문제)
-- [Links](#links)
+    - [로그인 쿠키 문제](#1-로그인-쿠키-문제)
+- [Features](#features)
 - [Tech Stacks](#tech-stacks)
+- [Links](#links)
 - [Schedule](#schedule)
 
 # Motivation
@@ -37,62 +36,88 @@ Spy Cat에서 자신의 서버를 등록하고, 간단한 미들웨어 함수를
 
 ## 1. 어떻게 서버에서 발생한 트래픽과 에러의 정보를 수집할 수 있을까?
 
-<br>
-
 ### 1) 트래픽을 어떻게 수집할 것인가?
 
-트래픽이란 **웹사이트에 방문한 사람들이 데이터를 주고받은 양** 을 뜻합니다.
+- 트래픽의 정의
+
+  트래픽이란 **웹사이트에 방문한 사람들이 데이터를 주고받은 양** 을 뜻합니다.
 
 데이터를 주고받는다 함은 클라이언트의 요청에 대한 서버의 응답을 나타냅니다. 따라서 트래픽은 서버에 들어오는 요청으로 확인할 수 있었습니다. 또한 서버가 클라이언트로 부터 요청을 받을 때 항상 개별 요청으로 받기 때문에 각각의 트래픽을 감지하는 것은 어렵지 않았습니다.
 
+- 접근 방법
+
 1. 우선 정보를 받아올 미들웨어 함수를 작성했습니다. 클라이언트로부터 들어온 1개의 요청은 서버에서 1개의 응답이 나가야 요청-응답 주기가 종료된다는 점을 이용했습니다.
 
-2. 작성한 미들웨어 함수에서 별도의 응답을 하지 않고, 요청 객체(`req`)에 들어있는 필요한 정보를 DB와 연결된 서버로 전송하도록 했습니다.
+2. 미들웨어 함수는 요청-응답 주기를 종료하거나 다음 스택의 미들웨어로 제어권을 넘기는 것을 선택할 수 있습니다. 따라서 작성한 미들웨어 함수에서 요청 객체(`req`)에 들어있는 필요한 정보를 얻은 후 다음 스택의 미들웨어 함수를 호출해 제어권을 넘겼습니다.
+   <details>
+      <summary>코드</summary>
+      <div markdown="1">
 
-```js
-exports.trafficParser = function (apikey) {
-  return function (req, res, next) {
-    axios
-      .post(`https://eb-spycat.co.kr/api/servers/${apikey}/traffics`, {
-        type: "traffic",
-        path: req.url,
-        host: req.headers.host,
-      })
-      .then(response => {
-        console.log(response.data);
-      })
-      .catch(error => {
-        console.error("Error sending traffic data:", error.message);
-      });
+   ```js
+   exports.trafficParser = function (apikey) {
+     return async function (req, res, next) {
+       try {
+         const response = await axios.post(
+           `https://eb-spycat.co.kr/api/servers/${apikey}/traffics`,
+           {
+             type: "traffic",
+             path: req.url,
+             host: req.headers.host,
+           },
+         );
+         console.log(response.data);
+       } catch (error) {
+         console.error("Error sending traffic data:", error.message);
+       }
+       next();
+     };
+   };
+   ```
 
-    next();
-  };
-};
-```
+      </div>
+    </details>
 
-그리고 각 트래픽이 분기되는 라우팅 분기점보다 위쪽에서 함수를 호출함으로써 서버에 들어온 모든 요청이 위의 미들웨어 함수를 거치도록 했습니다.
+3. 그리고 각 트래픽이 분기되는 라우팅 분기점보다 위쪽에서 미들웨어 함수를 호출했습니다.  
+   `Express`에서 미들웨어는 스택구조로 호출 순서에 따라 영향을 받습니다. 코드의 상단에 위치할수록 먼저 실행됩니다. 따라서 작성한 미들웨어 함수를 라우팅 분기점보다 위쪽에서 호출함으로써 모든 트래픽에 대해 접근이 가능했습니다.
 
-```js
-app.use(trafficParser(APIKEY)); // 라우팅 분기점 위에서 요청객체의 정보를 얻고 라우팅으로 요청 객체를 넘김
+   <details>
+      <summary>코드</summary>
+      <div markdown="1">
 
-app.use("/", indexRouter);
-app.use("/users", usersRouter);
-```
+   ```js
+   app.use(trafficParser(APIKEY)); // 라우팅 분기점 위에서 요청객체의 정보를 얻고 라우팅으로 요청 객체를 넘김
 
-에러 정보의 경우 에러 객체를 받는 에러 처리 미들웨어 함수를 만들어 사용했습니다. 이 또한 마찬가지로 사용자 서버의 에러 핸들러 바로 위에서 함수를 호출함으로써 서버에서 발생한 에러가 미들웨어 함수를 거치도록 했습니다.
+   app.use("/", indexRouter);
+   app.use("/users", usersRouter);
+   ```
 
-```js
-app.use(errorParser(APIKEY)); // 서버의 에러핸들러 바로 위에서 에러객체의 정보를 얻고 에러핸들러로 에러 객체를 넘김
+      </div>
+    </details>
 
-// error handler
-app.use(function (err, req, res, next) {
-  ...
-});
-```
+4. 에러 정보의 경우 미들웨어 함수를 만들어 서버의 에러 핸들러 바로 위에서 호출했습니다.  
+   `Express`에서 발생한 에러는 각 미들웨어에서 `next(error)`를 호출함으로써 일반 미들웨어를 지나쳐 에러 처리 미들웨어로 제어권을 넘깁니다.  
+   통상적으로 에러 처리 미들웨어는 서버의 코드 가장 하단에서 호출하는 이유입니다.
 
-기능 구현을 마친 뒤 추가적으로 위의 두 개의 함수를 하나로 합칠 수 있다면 사용자 편의성이 좋아질 것 같아 고민해 보았습니다.
+   <details>
+      <summary>코드</summary>
+      <div markdown="1">
 
-하지만 라우팅별 분기 처리가 되기 전에 정보를 받아야 하는 트래픽과 반대로 각 분기 내에서 발생한 에러를 동시에 받을 수 있는 적절한 위치를 현재 능력으로는 찾기 어려웠습니다. 추가적인 리서치도 시도해 봤지만 큰 소득은 없었고, 해결하지 못한 부분이 아쉬웠습니다.
+   ```js
+    app.use(errorParser(APIKEY)); // 서버의 에러핸들러 바로 위에서 에러객체의 정보를 얻고 에러핸들러로 에러 객체를 넘김
+
+    // error handler
+    app.use(function (err, req, res, next) {
+      ...
+    });
+   ```
+
+      </div>
+    </details>
+
+- 아쉬운 점
+
+  기능 구현을 마친 뒤 추가적으로 위의 두 개의 함수를 하나로 합칠 수 있다면 사용자 편의성이 좋아질 것 같아 고민해 보았습니다.  
+  하지만 라우팅별 분기 처리가 되기 전에 정보를 받아야 하는 트래픽과 반대로 각 분기 내에서 발생한 에러를 동시에 받을 수 있는 적절한 위치를 현재 능력으로는 찾기 어려웠습니다. 추가적인 리서치도 시도해 봤지만 큰 소득은 없었고, 해결하지 못한 부분이 아쉬웠습니다.
 
 <br>
 
@@ -100,35 +125,22 @@ app.use(function (err, req, res, next) {
 
 차트를 그리는 라이브러리는 많았지만 기술 스택을 다듬고 성장하는 과정이기에 라이브러리 없이 차트를 구현해 보고자 했습니다.
 
-<br>
-
 ### 1) SVG vs Canvas API
 
 리서치 결과 많은 개발자들이 차트를 구현할 때 `SVG` 또는 `Canvas API`를 사용한다는 정보를 얻었습니다. 추가적으로 둘의 장단점을 찾아보며 이번 프로젝트에 알맞은 방법이 무엇인지 고민해 봤습니다.
 
-1. `SVG`는 `Canvas API` 보다 한층 고차원의 API로 복잡성이 상대적으로 적었습니다. 동일한 도형을 그린다는 가정하에 `SVG`를 활용하면 개발자가 작성해야 하는 코드가 훨씬 줄어들었습니다. 반면 `Canvas API`는 더 많은 유연성을 제공해 보다 다양한 도형을 그릴 수 있었습니다.
+- 차이점
 
-예를 들어, 동일한 원형의 도형을 그린다고 가정했을 경우 실제 코드량은 아래와 같이 차이가 있었고, 그리려는 도형이 복잡해질수록 그 차이가 더 커졌습니다.
+  |                   SVG                   |                  Canvas API                  |
+  | :-------------------------------------: | :------------------------------------------: |
+  |   확장성이 뛰어나고 고해상도를 지원함   |  확장성이 떨어지고 고해상도에 적합하지 않음  |
+  |     스크립트와 CSS 모두 수정 가능함     |           스크립트로만 수정이 가능           |
+  | 다중 그래픽 요소로 이벤트 등록이 간편함 | 단일 HTML 요소로 이벤트 등록이 비교적 복잡함 |
 
-```js
-// SVG
-<svg width="100" height="100">
-  <circle cx="50" cy="50" r="45" fill="#FFA69E" />
-</svg>;
+- 테스트 결과
 
-// Canvas API
-<canvas id="canvas" width="100" height="100"></canvas>;
-// <script>
-const canvas = document.querySelector("canvas");
-const ctx = canvas.getContext("2d");
-ctx.fillStyle = "#FFA69E";
-ctx.arc(50, 50, 45, 0, 2 * Math.PI);
-ctx.fill();
-```
-
-2. 차트에 애니메이션 효과를 추가할 경우 별도의 스크립트가 필요한 `Canvas API` 보다 `SVG`가 보다 간단하게 구현할 수 있었습니다.
-
-위에서 그린 원에 대해 크기가 변하는 애니메이션을 적용할 경우 `SVG`는 `animate`요소를 사용해 간단하게 구현이 가능했지만, `Canvas API`는 작성해야 하는 스크립트 양이 월등히 많고 복잡했습니다.
+  동일한 원형 요소를 구현했을 경우 `SVG`와 `Canvas API`를 작성하는 코드량은 아래와 같이 차이가 있었습니다.  
+  또한 애니메이션 측면에서도 `SVG`는 `animate`요소로 간단하게 구현이 가능했지만, `Canvas API`는 작성해야 하는 스크립트 양이 월등히 많고 복잡했습니다.
 
 ```js
 // SVG
@@ -173,165 +185,78 @@ function draw() {
 draw();
 ```
 
-이번 프로젝트의 경우 정보를 나타내는 차트로 막대형 그래프와 도넛 그래프를 구상하고 있었습니다. 그리고 각 날짜에 해당하는 그래프를 클릭했을 때 상세 그래프를 추가적으로 보여주고 싶었습니다.
+- 선택한 방법: `SVG`
 
-이런 점들을 고려해 `SVG`가 더 적합하다고 생각했습니다. 선정한 `SVG`를 이용해 웹브라우저에서도 선명하고 간단한 애니메이션 효과를 추가한 차트를 손쉽게 구현할 수 있었습니다.
+  이번 프로젝트의 경우 웹브라우저 화면으로 대형 사이즈의 차트를 제공해야 했으므로 고해상도의 그래픽이 필요했습니다. 그래프를 렌더링 할 때 애니메이션도 추가하고자 했습니다.  
+  그리고 차트 요소를 클릭했을 때 상세 차트가 추가로 렌더링 되는 클릭 이벤트를 그래픽 요소에 추가하려고 했습니다.
 
-```js
-<circle
-  r={radius}
-  cx={cx}
-  cy={cy}
-  fill="transparent"
-  stroke={CHART_COLORS[index]}
-  strokeWidth={radius / 1.5}
-  strokeDasharray={`${strokeLength} ${spaceLength}`}
-  strokeDashoffset={-offset}
-  transform={`rotate(-90, ${cx}, ${cy})`}
->
-  <animate
-    attributeName="stroke-dasharray"
-    from={`0 ${circumference}`}
-    to={`${strokeLength} ${spaceLength}`}
-    dur="1s"
-    begin="0s"
-    fill="freeze"
-  />
-  <animate
-    attributeName="stroke-dashoffset"
-    from="0"
-    to={`${-offset}`}
-    dur="1s"
-    begin="0s"
-    fill="freeze"
-  />
-</circle>
-```
+  해상도, 애니메이션 효과, 이벤트 등록 등을 고려했을 때 `SVG`가 더 적합하다고 생각했습니다. 선정한 `SVG`를 이용해 웹브라우저에서도 선명하고 간단한 애니메이션 효과를 추가한 차트를 손쉽게 구현할 수 있었습니다.
 
-<img width="250" src="https://github.com/spy-cat-0/spycat-server/assets/110829006/ae47344f-85b9-4136-9cd8-aec6aa7564fa">
+  <img width="450" src="https://github.com/gunhwalee/spycat-client/assets/110829006/9810a40f-4675-4d4b-b1cb-4170c5f1f4f3">
 
 <br>
 
 ### 2) 차트를 그릴 데이터를 어떻게 정리할까?
 
-`SVG`를 이용한 차트 구현이 처음이라 먼저 차트를 구현할 함수를 먼저 작성해 보고, 그 이후에 차트에 필요한 데이터 포맷을 기준으로 DB에 저장된 정보를 가공하기로 결정했습니다.
+- 접근 방법
 
-1. 먼저 `viewbox`를 정의하고 차트의 제목과 내용물 두 그룹으로 나눠 분류했습니다.
+1. 직접 `SVG`를 이용한 차트 구현을 해본 경험이 없었기 때문에 차트를 구현할 함수를 먼저 작성해 보고
+2. 그 이후에 차트에 필요한 데이터 포맷을 기준으로 DB에 저장된 정보를 가공하기로 결정했습니다.
 
-2. `viewbox`범위 내에서 막대형 그래프의 길이 비율을 조절할 수 있는 `ratio`변수를 만들었습니다.  
-   `ratio`변수는 데이터 중 최댓값을 기준으로 그래프가 범위를 벗어나지 않도록 비율을 조절하는 역할을 합니다.
+- 차트 구현 (도넛 차트)
 
-```js
-function VerticalChart({data, width, height }) {
-  const barGroups = ... // 막대차트 요소들의 묶음
-  const [ratio, setRatio] = useState(8);
-  const maxObjArr = data.reduce((prev, next) => {
-    return prev.value >= next.value ? prev : next;
-  });
-  const maxValue = maxObjArr.value || 50;
+  1. 데이터마다 `circle`요소를 만들고 `stroke-width`속성을 사용해 도넛 형태의 이미지를 구현했습니다.
+  2. 각 데이터 항목이 전체 데이터에서 차지하는 비중을 구하고, `stroke-dasharray`속성에서 대시와 공백을 표시하는 변수를 활용했습니다.
+     - `const strokeLength = circumference * ratio;`  
+       (데이터가 차지하는 비중만큼의 길이)
+     - `const spaceLength = circumference - strokeLength;`  
+       (데이터를 제외한 공백의 길이)
+     - `strokeDasharray={strokeLength spaceLength}`  
+       (데이터의 비중만큼 `circle`요소의 길이 조절)
+  3. 각 `circle`요소가 동일한 시작점에서 그려지기 때문에, `stroke-dashoffset`속성을 조절했습니다.
+     - `filled += ratio;` (각 데이터 직전까지의 누적 비중)
+     - `const offset = fiiled * circumference`
+     - `strokeDashoffset={-offset}` (`circle`요소의 시작지점)
 
-  if (maxValue * ratio > height * 0.8) {
-    setRatio(Math.floor(ratio * 0.75));
-  } else if (maxValue * ratio < height / 2) {
-    setRatio(Math.floor(ratio * 1.5));
-  }
+<br>
 
-  return (
-    <svg viewBox={`0 0 ${width} ${height}`} width={width} height={height}>
-      <text className="title" x="10" y="30">
-        차트 제목
-      </text>
-      <g className="chart" transform="translate(80, 60)">
-        {barGroups}
-      </g>
-    </svg>
-  );
-}
-```
+- 구현 결과
 
-3. `barGroups`에 들어갈 막대헝차트의 컴포넌트를 추가로 작성했습니다.  
-   우선 날짜를 나타내는 라벨 텍스트와 값을 나타내는 막대 모양 그리고 값을 읽을 수 있도록 텍스트까지 3개의 요소를 하나로 묶어 컴포넌트로 만들었습니다.
+  [작성 코드](https://github.com/gunhwalee/spycat-client/blob/main/src/charts/DonutChart.js)
 
-4. 해당 컴포넌트를 데이터의 수에 맞게 데이터 배열을 순회하면서 반환하도록 했습니다.
+  <img src="https://github.com/gunhwalee/spycat-client/assets/110829006/5bb7b5b4-9bb7-4f62-9d39-de9aace75266" width="250">
+
+<br>
+
+- 데이터 가공
+
+  만들어진 함수를 이용하기 위해서 데이터는 이름(라벨)과 값 속성을 가진 객체로 이루어져야 했습니다. 따라서 DB에서 넘어온 데이터를 아래와 같은 형식으로 가공해야 했습니다.
 
 ```js
-function BarVerticalGroup(props) {
-  const barPadding = 5; // 막대 그래프의 폭
-  const barColor = "#348AA7"; // 그래프 색상
-  const heightScale = data => data * props.ratio;
-  const xMid = props.barWidth * 0.5; // 텍스트의 위치를 정해줄 변수
-  const height = heightScale(props.d.value); // ratio 변수를 활용해 막대그래프의 최대높이를 설정
-  const startY = 200 - height; // svg의 좌표는 좌측,상단을 기준으로 지정되지만 그래프의 경우 하단에서 시작하기 위해 별도의 변수 선언
+// DB 데이터
+const data1 = {
+  path: "/",
+  server: ObjectId,
+  createAt: 2023-05-29T05:30:20.051+00:00,
+};
 
-  return (
-    <g className="verticalbar-group">
-      <text className="name-label" x={xMid} y="215" alignmentBaseline="middle">
-        {props.data.name}
-      </text>
-      <rect
-        x={barPadding * 0.5}
-        y={startY}
-        width={props.barWidth - barPadding}
-        height={height}
-        fill={barColor}
-      />
-      <text className="value-label" x={xMid} y="-10" alignmentBaseline="middle">
-        {props.data.value}
-      </text>
-    </g>
-  );
-}
-```
+const traffics = [data1, data2, ...];
 
-위의 컴포넌트를 이용해 차트를 그리기 위한 데이터는 이름(라벨)과 값 속성을 가진 객체로 이루어져야 했습니다. 따라서 아래와 같은 형식의 데이터를 목표로 삼았습니다.
-
-```js
-const dailyTraffics = [
-  { name: 1, value: 24 },
-  { name: 2, value: 11 },
-  { name: 3, value: 30 },
-  ...
+// 타깃 형식
+const routesTraffics = [
+  { name: "/", value: 24 },
+  { name: "/login", value: 16 },
+  { name: "/signup", value: 8 },
 ];
 ```
 
-우선 사용자가 선택한 서버에 대해 차트를 추가 구성할 때마다 DB에 데이터를 요청하는 것이 비효율적이라 생각해, 최초 1회 정보를 받아와 `global state`로 저장해두고 필요할 때마다 사용했습니다.
+1. 먼저 차트별 분류 기준을 `name`속성으로 정의해야 했습니다. (차트별로 각각 날짜, 라우팅, 시간)
+2. `traffics` 배열을 순회하면서 `name`속성에 해당할 때마다 `value`값을 업데이트했습니다.
+3. 이때 시간의 경우 DB에 UTC 기준으로 저장을 하고 클라이언트에서 로컬 시간으로 변환해 지역별 시간 혼동을 방지했습니다.
 
-DB에서 아래와 같은 구조의 정보를 받아왔습니다. 여기서 트래픽 발생 시간은 서버의 지역 정보마다 time zone이 달라 혼동이 올 수 있기 때문에 UTC 형태로 DB에 저장하고, 정보를 필요로하는 클라이언트마다 로컬 시간으로 변환해서 사용하도록 했습니다.
+- 결과물
 
-```js
-const data = [
-  {
-    path: "/login", // 트래픽 발생 경로
-    server: ObjectId(String), // Server Document의 ID값
-    createAt: 2023-06-01T05:29:44.076+00:00, // 트래픽 발생 시간
-    expiredAt: 2023-06-29T05:29:44.328+00:00, // 데이터 자동삭제 시간
-  },
-  ...
-];
-```
-
-1. 일자별 트래픽 정보를 가공하기 위해 빈 배열을 만들었습니다. 그리고 일자는 1일 ~ 31일이라는 범위가 정해져있기 때문에 각 날짜를 이름으로 갖고 값이 0인 객체를 배열에 채웠습니다.
-
-2. `global state`에 저장되어 있는 배열 형태의 트래픽 정보를 순회하면서 날짜가 일치할 경우 `value`값을 1씩 더해줬습니다. 라우팅과 시간대별 트래픽 정보도 동일한 로직으로 진행했습니다.
-
-```js
-const dailyTraffic = [];
-
-for (let i = 1; i < 31; i += 1) {
-  dailyTraffic[i] = { name: i, value: 0 };
-}
-
-for (let i = 0; i < data.length; i += 1) {
-  const date = new Date(data[i].createdAt.toString()); // UTC시간을 클라이언트 로컬시간으로 변경
-  let day = String(date).slice(8, 10);
-
-  if (day < 10) day = day.at(-1);
-
-  for (let j = 0; j < 31; j += 1) {
-    if (dailyTraffic[j].name === Number(day)) dailyTraffic[j].value += 1;
-  }
-}
-```
+  [작성 코드](https://github.com/gunhwalee/spycat-client/blob/main/src/handlers/trafficInfoHandlers.js)
 
 <br>
 
@@ -343,171 +268,96 @@ for (let i = 0; i < data.length; i += 1) {
 
 <br>
 
-### 1) 사용자 경험(UX)을 적용해 보자
+### 1) 무분별한 서버요청을 차단해 보자
 
-회원가입이나 로그인, 데이터 받아오기 등 클라이언트와 서버 사이의 요청-응답이 발생하는 로직의 경우 대략 1 ~ 2초 정도 응답을 기다리는 시간이 필요했습니다. 물론 1 ~ 2초는 짧은 시간이지만 사용자의 입장에서 체감해 보니 브라우저가 멈췄다는 느낌이 들법했습니다.  
-따라서 사용자에게 '이 작업은 어느 정도의 시간이 필요합니다'라는 뜻을 전달해야 했습니다.
+- 문제점
 
-1. 서버와 요청을 주고받는 동작에 대해서는 별도의 상태를 만들어 서버에서 응답이 돌아오기 전까지 버튼을 비활성화시켜 사용자에게 현재 서버로부터 응답 대기 중이라는 신호를 나타냈습니다.
+  클라이언트에서 들어오는 요청은 클라이언트 주소에 접속한 사용자에 한해서 일어나는 일입니다.  
+  하지만 `npm`패키지에서 들어오는 요청은 `npm`을 사용할 줄 아는 사람이라면 누구나 요청 전송이 가능했습니다.  
+  또한 클라이언트 사용자는 인증 토큰을 통해 식별이 가능했지만, `npm`패키지를 사용하는 프로젝트(여기서는 함수를 호출한 사용자의 서버)를 식별할 방법이 없다는 문제도 있었습니다.
 
-```js
-// Component
-const [disabled, setDisabled] = useState(false);
+- 접근 방법
 
-try {
-  setDisabled(true); // 서버에 요청 보내는 순간 활성화관련 상태 변경 (버튼 비활성화)
-  const response = await axios.post(
-    // 서버로 요청 보내기
-  );
+  인증과 API KEY에 대해 리서치해 보고 그 차이점을 정리해 봤습니다.
 
-  setDisabled(false); // 서버에서 응답이 들어오는 순간 활성화관련 상태 변경 (버튼 활성화)
-  // ...
-}
-```
+  |              인증(Authenticate)              |                   API KEY                   |
+  | :------------------------------------------: | :-----------------------------------------: |
+  |        앱이나 사이트의 사용자를 식별         |      API를 호출하는 앱이나 사이트 식별      |
+  | 사용자에게 요청을 위한 접근 권한 여부를 확인 | 프로젝트가 API에 대한 접근 권한 여부를 확인 |
 
-2. 추가로 비활성화된 버튼에 간단한 애니메이션을 추가해 좀 더 사실적인 환경을 제공하고자 했습니다.
+  따라서 사이트 사용자에게 등록한 서버마다 API KEY를 발급하고, 해당 키를 `npm`패키지 함수의 인자로 받아 접근 권한을 부여할 수 있었습니다.
 
-```js
-// Spinner Component
-const SpinnerBox = styled.div`
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-`;
-
-// Button
-<G.Button type="submit" disabled={disabled}>
-  {disabled ? <Spinner /> : "로그인"}
-</G.Button>;
-```
-
-<img width="200" src="https://github.com/spy-cat-0/spycat-server/assets/110829006/3627e9ba-1b83-4ea3-ae7b-771bc48dcba0">
+  <img width="400" src="https://github.com/gunhwalee/spycat-client/assets/110829006/fc740342-412e-412a-bae2-48caaf2569be">
 
 <br>
 
-### 2) 무분별한 서버요청을 차단해 보자
+### 2) UI를 사용자 친화적으로 만들어보자
 
-트래픽과 에러를 수집하는 미들웨어 함수를 `npm`으로 설치해서 사용할 수 있는데, Spy Cat 서비스를 이용하는 사용자가 아니더라도 사용할 수 있었습니다. 따라서 서버의 과부하, DB의 용량 문제 등을 해결하기 위해 미들웨어 함수로부터 들어오는 요청에 대해 접근 권한을 부여해야겠다고 생각했습니다.
+- 문제점
 
-부트 캠프 과제를 진행하면서 `passport-github`으로 Github에서 `OAuth`를 사용했던 경험을 떠올려 Spy Cat에 회원가입을 한 사용자들에게 APIKEY를 발급하기로 했습니다.
+  프로젝트에서 적용된 드롭 다운 메뉴와 슬라이드 메뉴를 사용하는 과정에서 불편함을 느낀 부분이 있었습니다.  
+  보통 드롭 다운 메뉴의 경우 불리언 값을 나타내는 상태를 생성하고, 마우스 이벤트(클릭 또는 호버)에 상태를 업데이트해 드롭 다운 메뉴를 마운트, 언마운트하는 방식으로 사용합니다.
 
-```js
-// 서버목록 생성 로직
-const apikey = uuidv4(); // 생성된 서버마다 별도의 API Key 생성
-const server = await Server.create({ serverName, url, apikey });
-// ...
-```
+  여기서 이벤트가 발생할 때 해당 컴포넌트 요소가 바로 화면에 나타나거나 사라지기 때문에 선택하고자 하는 메뉴가 의도치 않게 빠르게 움직이는 현상이 있었습니다.
 
-이렇게 사용자가 저장한 자신의 서버 목록별로 별도의 APIKEY를 발급함으로써 무분별한 서버 접근을 차단하고 요청 들어오는 데이터에 대해 서버별 분류가 훨씬 간단해졌습니다.
+  <img width="150" src="https://github.com/gunhwalee/spycat-client/assets/110829006/93193d00-e952-416a-baf7-beede808dd40">
 
-<br>
+- 해결 방법
 
-#### 3) UI를 사용자 친화적으로 만들어보자
+  이런 문제를 해결하고자 애니메이션 효과를 추가했습니다.  
+  처음에 CSS에 `animation`속성을 추가했지만 적용이 되지 않았습니다.  
+  상태 값이 `true`에서 `false`로 바뀌는 순간 애니메이션이 적용돼야 하지만 `DOM`에서 해당 요소가 언마운트되다 보니 애니메이션이 적용되지 않고 곧바로 사라지는 현상이 있었습니다.
 
-이번 프로젝트에서 적용된 드롭 다운 메뉴와 슬라이드 메뉴를 사용하는 과정에서 불편함을 느낀 부분이 있었습니다. 보통 드롭 다운 메뉴의 경우 불리언 값을 나타내는 상태를 생성하고, 마우스 이벤트(클릭 또는 호버)에 상태를 업데이트해 드롭 다운 메뉴를 마운트, 언마운트하는 방식으로 사용합니다.
+  이를 해결하기 위해 애니메이션을 트리거 할 수 있는 상태와 컴포넌트를 마운트 하는 상태를 별도로 만들어 문제를 해결했습니다.
 
-여기서 `mouseenter` 혹은 `mouseleave` 이벤트가 발생할 때 해당 컴포넌트 요소가 바로 화면에 나타나거나 사라지기 때문에 사용자가 원치 않는 메뉴에 마우스가 호버 되는 상황이 종종 발생했습니다.
+  <img width="150" src="https://github.com/gunhwalee/spycat-client/assets/110829006/f8352322-ca87-4b6b-93eb-2dd64064609e">
 
-<img width="340" alt="스크린샷 2023-06-06 오후 9 24 45" src="https://github.com/spy-cat-0/spycat-client/assets/110829006/18d0cfd1-ae1f-4828-831e-1cc97de8be97">
+- 추가 고려 사항
 
-이런 문제를 해결하고자 애니메이션 효과를 추가했습니다. 처음에 CSS에 `animation`속성을 추가했지만 적용이 되지 않았습니다. 상태 값이 `true`에서 `false`로 바뀌는 순간 애니메이션이 적용돼야 하지만 `DOM`에서 해당 요소가 언마운트되다 보니 애니메이션이 적용되지 않고 곧바로 사라지는 현상이 있었습니다.
+  **마우스 호버 이벤트**
 
-이를 해결하기 위해 애니메이션을 트리거 할 수 있는 상태와 컴포넌트를 마운트하는 상태를 별도로 만들어 문제를 해결했습니다.
+  마우스 호버 이벤트는 `mouseover`와 `mouseenter`로 나눠집니다. 두 가지 모두 마우스가 요소를 가리킬 경우 발생하지만 큰 차이점이 하나 있습니다.  
+   바로 이벤트 버블링 유무입니다.
+  `mouseover`이벤트는 이벤트 버블링이 적용되기 때문에 드롭 다운 메뉴에서 사용할 경우 새로운 하위 요소를 가리킬 때마다 이벤트다 다시 발생합니다.  
+   그렇게 되면 마우스로 메뉴 목록을 이동할 때마다 드롭 다운 메뉴가 다시 나타나기 때문에 이 경우엔 적절하지 않았습니다.
 
-```js
-// Component
-const [showDrop, setShowDrop] = useState(false);
-const [animation, setAnimation] = useState(false); // 애니메이션과 마운트를 관리하는 상태를 별도로 선언
+  **아마존 홈페이지의 메뉴를 살펴보고 느낀점**
 
-const mouseHandler = () => {
-  if (showDrop) {
-    setAnimation(false);
-    setTimeout(() => {
-      setShowDrop(false);
-    }, TIME.SIDE_DROPDOWN * 1000); // 컴포넌트가 언마운트 되는 시점을 애니메이션이 진행되는 시간만큼 뒤로 미뤄서 진행
-  } else {
-    setAnimation(true);
-    setShowDrop(true);
-  }
-};
-...
-{showDrop && (
-  ...
-  <S.DropDown className={animation ? "active" : "none"}>
-  ...
-)} // animation상태를 기준으로 요소의 class를 별도로 설정
-
-// CSS
-&.none {
-  animation: dropup ${TIME.SIDE_DROPDOWN}s ease;
-  animation-fill-mode: forwards;
-  @keyframes dropup {
-    0% {
-      transform: translateY(0);
-    }
-    100% {
-      transform: translateY(-100%);
-    }
-  }
-}
-
-&.active {
-  animation: dropdown ${TIME.SIDE_DROPDOWN}s ease;
-  @keyframes dropdown {
-    0% {
-      transform: translateY(-100%);
-    }
-    100% {
-      transform: translateY(0);
-    }
-  }
-}
-```
-
-<img width="150" src="https://github.com/spy-cat-0/spycat-server/assets/110829006/ad1ead57-c3a5-421f-80b9-59730a3971e3">
+  아마존 홈페이지의 메뉴를 살펴보면 각 메뉴에 마우스 호버 시 우측에 서브메뉴가 나옵니다.  
+  이때 보통의 메뉴바는 우측의 서브메뉴로 마우스를 옮기는 과정에서 서브메뉴가 바뀌는 상황을 종종 보곤 했습니다.  
+  그런데 아마존의 메뉴는 마우스가 움직일 때 다른 메뉴에 호버가 되더라도 서브메뉴가 바뀌지 않았습니다.  
+  정말 신기한 기능이었고, 드롭다운 메뉴에도 적용하고 싶었지만 도저히 방법을 찾을 수 없었습니다.  
+  향후에 역량이 쌓인다면 꼭 도전해 보고 싶은 기능입니다.
 
 <br>
 
 ## 4. 클라이언트와 서버의 통신문제?
 
-부트 캠프 교육기간 동안은 모놀리스구조로 작업을 했었습니다. 그렇다 보니 클라이언트와 서버 간의 요청을 주고받는 상황에서 큰 어려움이 없었습니다.
-
-이번 프로젝트에서는 클라이언트와 서버를 별도로 구성해 작업을 했다 보니 간단한 클라이언트와 서버 간 통신에서 여러 가지 문제를 경험할 수 있었습니다.
-
-<br>
-
-### 1) CORS 문제
-
-프로젝트 이전에 CORS 문제를 직접 경험해 보지는 못했지만, 그 개념과 해결 방법에 대해서는 사전에 조사를 해두었습니다. 그리고 실제로 해결 방법을 적용하는 것도 어렵지 않았습니다.
-
-서버와 클라이언트의 출처가 다르기 때문에 CORS 문제를 해결하기 위해서 서버에서 응답 헤더에 Access-Control값을 설정해야했습니다. 직접 응답 객체에 `setHeader` 메서드를 이용해 허용 출처를 설정할 수도 있지만, 저는 좀 더 간편한 `cors`모듈을 사용해 설정했습니다.
-
-```js
-const cors = require("cors");
-...
-app.use(cors({
-  origin: 클라이언트 출처 // 접근 권한을 부여할 도메인
-  credentials: true // 클라이언트와 서버 간에 쿠키를 주고받도록 허용
-}));
-```
+부트 캠프 교육기간 동안은 모놀리스 구조로 작업을 했었습니다. 그렇다 보니 클라이언트와 서버 간의 요청을 주고받는 상황에서 큰 어려움이 없었습니다.  
+하지만 이번 프로젝트에서 서버와 클라이언트를 별도로 구성하다 보니 문제점이 있었습니다.
 
 <br>
 
-### 2) 로그인 쿠키 문제
+### 1) 로그인 쿠키 문제
 
-기능 구현이 완료된 후 실제 배포를 진행하면서 로그인 과정에서 추가적인 문제도 발생했었습니다. 로컬 환경에서는 로그인 과정에서 발급된 토큰이 클라이언트에 정상적으로 저장됐었습니다.
+- 문제점
 
-하지만 프로덕션 환경에서는 로그인 후 토큰이 쿠키에 저장되지 않는 문제점이 있었습니다. 로그인은 정상적으로 진행되었지만 로그인 후 발급된 토큰이 저장되지 않아 다음 요청이 인가 로직을 통과하지 못하는 것이 문제였습니다.
+  기능 구현이 완료된 후 실제 배포를 진행하면서 로그인 과정에서 추가적인 문제도 발생했었습니다.  
+  로컬 환경에서는 로그인 후 발급된 토큰이 클라이언트에 정상적으로 저장됐었지만, 프로덕션 환경에서는 쿠키에 저장되지 않는 문제점이 있었습니다.  
+  로그인은 정상적으로 진행되었지만 로그인 후 발급된 토큰이 저장되지 않아 다음 요청이 인가 로직을 통과하지 못하는 것이 문제였습니다.
 
-우선 `Express` 공식 문서를 찾아보니 제가 설정하지 않았던 `sameSite`라는 설정이 있었습니다. 쿠키에서 `SameSite`속성은 HTTP Working Group이 2016년에 발표한 RFC6265에 포함된 내용으로, **쿠키를 자사 및 동일 사이트 컨텍스트로 제한해야 하는지**를 설정하는 것이었습니다. 해당 속성은 `Strict`, `Lax`, `None` 3가지 값이 설정 가능했습니다.
+- 접근 방법
 
-- `Strict`: 가장 보수적인 설정으로 크로스 사이트 요청에는 항상 전송되지 않습니다.
-- `Lax`: `Strict`보다 한 단계 느슨한 설정으로 Top Level Navigation(웹 페이지 이동)과 안전한 HTTP 메서드(`GET`) 요청에 한 해 크로스 사이트 요청에도 쿠키가 전송됩니다.
-- `None`: `SameSite`속성이 생기기 전 브라우저 작동 방식과 동일하게 작동됩니다.
+  우선 `Express` 공식 문서를 찾아보니 제가 설정하지 않았던 `sameSite`라는 설정이 있었습니다.  
+  쿠키에서 `SameSite`속성은 HTTP Working Group이 2016년에 발표한 RFC6265에 포함된 내용으로, **쿠키를 자사 및 동일 사이트 컨텍스트로 제한해야 하는지**를 설정하는 것이었습니다.
 
-발생한 문제의 경우 로그인 과정에서 발생한 문제로 크로스 사이트에서 `POST` 메서드를 사용하고 있었기 때문에 속성값을 `None`으로 설정해야 했습니다.
+  해당 속성은 `Strict`, `Lax`, `None` 3가지 값이 설정 가능했습니다.
+
+  - `Strict`: 가장 보수적인 설정으로 크로스 사이트 요청에는 항상 전송되지 않습니다.
+  - `Lax`: `Strict`보다 한 단계 느슨한 설정으로 Top Level Navigation(웹 페이지 이동)과 안전한 HTTP 메서드(`GET`) 요청에 한 해 크로스 사이트 요청에도 쿠키가 전송됩니다.
+  - `None`: `SameSite`속성이 생기기 전 브라우저 작동 방식과 동일하게 작동됩니다.
+
+  발생한 문제의 경우 로그인 과정에서 발생한 문제로 크로스 사이트에서 `POST` 메서드를 사용하고 있었기 때문에 속성값을 `None`으로 설정해야 했습니다.
 
 ```js
 // 쿠키를 응답하는 로직
@@ -523,18 +373,19 @@ res
   );
 ```
 
-`sameSite`속성 설정 후 문제가 해결될 것이라 생각했지만 이번에는 `typeError: option sameSite is invalid`라는 에러가 발생했습니다. 리서치 결과 다행히 `express` 버전 문제였고 버전 업데이트 후 쉽게 해결할 수 있었습니다. (`express-generator`로 생성할 경우 4.16버전이 설치되는데 해당버전에서는 `sameSite` 옵션을 지원하지 않습니다.)
+`sameSite`속성 설정 후 문제가 해결될 것이라 생각했지만 `typeError: option sameSite is invalid`라는 에러가 발생했습니다.  
+리서치 결과 다행히 `express` 버전 문제였고 버전 업데이트 후 쉽게 해결할 수 있었습니다. (`express-generator`로 생성할 경우 4.16버전이 설치되는데 해당버전에서는 `sameSite` 옵션을 지원하지 않습니다.)
 
-# Links
+# Features
 
-Deploy
-
-- [Spy Cat](https://spycat.netlify.app)
-
-Github Repositories
-
-- [Frontend](https://github.com/spy-cat-0/spycat-client)
-- [Backend](https://github.com/spy-cat-0/spycat-server)
+- 로그인 이전 예시용 차트를 통해 대략적인 서비스 내용을 확인할 수 있습니다.
+- 로그인 후 좌측의 사이드 바에서 서버를 등록할 수 있습니다.
+- 사용자가 등록한 서버별 트래픽, 에러 정보를 제공합니다.
+- 트래픽 차트는 오늘 기준 최근 28일의 트래픽 정보, 라우팅별 트래픽, 트래픽 발생 시간을 확인할 수 있습니다.
+- 에러 차트는 오늘 기준 최근 28일의 에러 발생 정보, 라우팅별 에러, 에러 발생 시간을 확인할 수 있습니다.
+- 각 차트는 날짜를 클릭해 해당 날짜에 발생한 라우팅별 정보, 발생 시간을 확인할 수 있습니다.
+- 사용자는 마이페이지에서 등록된 서버를 관리할 수 있고(생성, 삭제), 서버마다 발급된 API KEY를 확인할 수 있습니다.
+- API KEY는 클립보드에 복사가 가능하며, 재발급 버튼으로 재발급 받을 수 있습니다.
 
 # Tech Stacks
 
@@ -551,6 +402,23 @@ Backend
 - Express
 - MongoDB
 - Mongoose
+
+## MongoDB를 선택한 이유
+
+MongoDB는 대표적인 비관계형 데이터베이스로 유연한 스키마 수정이 큰 장점입니다.  
+프로젝트 시작 단계에서 데이터 구조를 구성하는 것 역시 매우 중요한 일이지만, 프로젝트 경험이 적은 저로서는 완벽한 데이터 구조를 구성하기 어려웠습니다.  
+따라서 프로젝트를 진행하면서 중간에 데이터 구조를 변경할 경우가 발생할 것이라 예상해 MongoDB를 선정했습니다.
+
+# Links
+
+Live Server
+
+- [Spy Cat](https://spycat.netlify.app)
+
+Github Repositories
+
+- [Frontend](https://github.com/spy-cat-0/spycat-client)
+- [Backend](https://github.com/spy-cat-0/spycat-server)
 
 # Schedule
 
