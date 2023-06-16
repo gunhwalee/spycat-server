@@ -160,7 +160,6 @@ exports.loadErrorInfo = async (req, res, next) => {
 exports.deleteServerInfo = async (req, res, next) => {
   const { url } = req.params;
 
-  console.log(url);
   try {
     const server = await Server.findOne({ url });
 
