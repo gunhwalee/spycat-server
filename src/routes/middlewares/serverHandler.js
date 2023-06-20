@@ -46,14 +46,15 @@ exports.createServerInfo = async (req, res, next) => {
     await User.findByIdAndUpdate(id, {
       servers: [...user.servers, server._id],
     });
+
+    res.send({
+      result: "ok",
+      message: "서버가 정상적으로 추가됐습니다.",
+      server,
+    });
   } catch (err) {
     return next(err);
   }
-
-  res.send({
-    result: "ok",
-    message: "서버가 정상적으로 추가됐습니다.",
-  });
 };
 
 exports.updateServerInfo = async (req, res, next) => {

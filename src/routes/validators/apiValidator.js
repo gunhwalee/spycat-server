@@ -28,11 +28,13 @@ exports.regenerateKey = async (req, res, next) => {
 
   try {
     await Server.findOneAndUpdate({ apikey }, { apikey: newApiKey });
+
+    const user = await User.findById(req.user).populate("servers");
+    res.send({
+      result: "ok",
+      servers: user.servers,
+    });
   } catch (err) {
     return next(err);
   }
-
-  res.send({
-    result: "ok",
-  });
 };
