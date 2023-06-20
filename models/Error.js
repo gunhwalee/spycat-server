@@ -7,7 +7,7 @@ const errorSchema = new mongoose.Schema({
   errorMessage: { type: String, required: true },
   errorStack: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
-  expiredAt: { type: Date, expireAfterSeconds: 1 },
+  expiredAt: { type: Date, expires: 1 },
   server: { type: mongoose.Schema.Types.ObjectId, ref: "Server" },
 });
 

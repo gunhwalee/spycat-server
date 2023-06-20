@@ -4,7 +4,7 @@ const trafficSchema = new mongoose.Schema({
   path: { type: String, required: true, trim: true },
   host: { type: String, required: true, trim: true },
   createdAt: { type: Date, default: Date.now },
-  expiredAt: { type: Date, expireAfterSeconds: 1 },
+  expiredAt: { type: Date, expires: 1 },
   server: { type: mongoose.Schema.Types.ObjectId, ref: "Server" },
 });
 
