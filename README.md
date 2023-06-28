@@ -18,9 +18,10 @@ Spy Cat에서 자신의 서버를 등록하고, 간단한 미들웨어 함수를
   - [어떻게 데이터를 시각화할 것인가?](#3-어떻게-데이터를-시각화할-것인가)
     - [SVG vs Canvas API](#1-svg-vs-canvas-api)
     - [차트를 그릴 데이터를 어떻게 정리할까?](#2-차트를-그릴-데이터를-어떻게-정리할까)
-  - [어떻게 사용자 경험을 적용할까?](#4-어떻게-복잡한-상태들을-관리할까)
+  - [어떻게 사용자 경험을 적용할까?](#4-어떻게-사용자경험ux을-적용할까)
     - [슬라이드 메뉴에 UX 적용하기](#1-슬라이드-메뉴에-ux-적용하기)
-    - [사용자가 불편한 부분을 없애보자](#2-사용자가-불편한-부분을-없애보자)
+    - [컴포넌트간의 로직을 공유해 보자](#2-컴포넌트간의-로직을-공유해-보자)
+    - [사용자가 불편한 부분을 없애보자](#3-사용자가-불편한-부분을-없애보자)
   - [클라이언트와 서버의 통신문제?](#5-클라이언트와-서버의-통신문제)
     - [무분별한 서버요청을 차단해 보자](#1-무분별한-서버요청을-차단해-보자)
     - [로그인 쿠키 문제](#2-로그인-쿠키-문제)
@@ -47,7 +48,7 @@ Spy Cat에서 자신의 서버를 등록하고, 간단한 미들웨어 함수를
 
   트래픽이란 **웹사이트에 방문한 사람들이 데이터를 주고받은 양** 을 뜻합니다.
 
-데이터를 주고받는다 함은 클라이언트의 요청에 대한 서버의 응답을 나타냅니다. 따라서 트래픽은 서버에 들어오는 요청으로 확인할 수 있었습니다. 또한 서버가 클라이언트로 부터 요청을 받을 때 항상 개별 요청으로 받기 때문에 각각의 트래픽을 감지하는 것은 어렵지 않았습니다.
+  데이터를 주고받는다 함은 클라이언트의 요청에 대한 서버의 응답을 나타냅니다. 따라서 트래픽은 서버에 들어오는 요청으로 확인할 수 있었습니다. 또한 서버가 클라이언트로 부터 요청을 받을 때 항상 개별 요청으로 받기 때문에 각각의 트래픽을 감지하는 것은 어렵지 않았습니다.
 
 - 접근 방법
 
@@ -146,7 +147,9 @@ Spy Cat에서 자신의 서버를 등록하고, 간단한 미들웨어 함수를
   const { trafficParser, errorParser } = require("spycat-tracker");
   ```
 
-  [npm패키지](https://github.com/gunhwalee/spycat-tracker)
+  [npm패키지 링크](https://github.com/gunhwalee/spycat-tracker)
+
+<br>
 
 **아쉬운 점**
 
@@ -202,7 +205,7 @@ Spy Cat에서 자신의 서버를 등록하고, 간단한 미들웨어 함수를
 
   `Mongoose`의 `Model.watch()` API를 적용했습니다.
 
-  해당 API는 DB에 변경사항이 있는지 컬렉션을 감시하는 기능이 있습니다. `change`, `erro`, `end`, `close` 이벤트를 감지할 수 있으며 해당 이벤트가 발생했을 때 전달받은 콜백 함수를 호출합니다.
+  해당 API는 DB에 변경사항이 있는지 컬렉션을 감시하는 기능이 있습니다. `change`, `error`, `end`, `close` 이벤트를 감지할 수 있으며 해당 이벤트가 발생했을 때 전달받은 콜백 함수를 호출합니다.
 
   또한 `change` 이벤트에는 `operationType`이라는 속성이 존재해 생성, 삭제 등을 구분할 수 있었습니다.
 
@@ -289,8 +292,6 @@ Spy Cat에서 자신의 서버를 등록하고, 간단한 미들웨어 함수를
 
   <img width="450" src="https://github.com/gunhwalee/spycat-client/assets/110829006/9810a40f-4675-4d4b-b1cb-4170c5f1f4f3" alt="main chart">
 
-<br>
-
 ### 2) 차트를 그릴 데이터를 어떻게 정리할까?
 
 - 접근 방법
@@ -302,12 +303,9 @@ Spy Cat에서 자신의 서버를 등록하고, 간단한 미들웨어 함수를
 
   1. 데이터마다 `circle`요소를 만들고 `stroke-width`속성을 사용해 도넛 형태의 이미지를 구현했습니다.
   2. 각 데이터 항목이 전체 데이터에서 차지하는 비중을 구하고, `stroke-dasharray`속성에서 대시와 공백을 표시하는 변수를 활용했습니다.
-     - `const strokeLength = circumference * ratio;`  
-       (데이터가 차지하는 비중만큼의 길이)
-     - `const spaceLength = circumference - strokeLength;`  
-       (데이터를 제외한 공백의 길이)
-     - `strokeDasharray={strokeLength spaceLength}`  
-       (데이터의 비중만큼 `circle`요소의 길이 조절)
+     - `const strokeLength = circumference * ratio;` (데이터가 차지하는 비중만큼의 길이)
+     - `const spaceLength = circumference - strokeLength;` (데이터를 제외한 공백의 길이)
+     - `strokeDasharray={strokeLength spaceLength}` (데이터의 비중만큼 `circle`요소의 길이 조절)
   3. 각 `circle`요소가 동일한 시작점에서 그려지기 때문에, `stroke-dashoffset`속성을 조절했습니다.
      - `filled += ratio;` (각 데이터 직전까지의 누적 비중)
      - `const offset = fiiled * circumference`
@@ -391,14 +389,14 @@ Spy Cat에서 자신의 서버를 등록하고, 간단한 미들웨어 함수를
 2.  애니메이션 효과를 적용해 보자.
 
     목록을 클릭했을 때 갑자기 등장하는 모달은 사용자에게 예상하지 못한 이벤트라고 생각될 수 있었습니다.  
-     따라서 화면의 우측에서 슬라이드 메뉴 형식으로 자연스럽게 모달이 화면에 등장하도록 애니메이션 효과를 적용해 봤습니다.
+    따라서 화면의 우측에서 슬라이드 메뉴 형식으로 자연스럽게 모달이 화면에 등장하도록 애니메이션 효과를 적용해 봤습니다.
 
     CSS에 존재하는 `animation`속성에는 애니메이션 효과의 지속시간을 설정할 수 있고 그 설정값에 따라 애니메이션 효과가 적용되는 전체 시간이 결정됩니다.
 
     하지만 모달 컴포넌트의 경우 상태 값이 `true`또는 `false`로 바뀌는 순간 `DOM`에서 해당 요소가 마운트/언마운트되기 때문에 적용 시간과의 시간 차이로 애니메이션 효과가 적용되지 않는 문제가 있었습니다.
 
     이를 해결하기 위해 애니메이션을 트리거하는 상태와 컴포넌트의 마운트를 트리거하는 상태를 별도로 선언해 상태 변경에 시간차를 설정했습니다.  
-     이때 코드 유지 보수 측면에서 시간 값을 상수로 설정해 추후에 수정이 용이하도록 보완했습니다.
+    이때 코드 유지 보수 측면에서 시간 값을 상수로 설정해 추후에 수정이 용이하도록 보완했습니다.
 
     ```js
     const [showModal, setShowModal] = useState(false);
@@ -457,15 +455,59 @@ Spy Cat에서 자신의 서버를 등록하고, 간단한 미들웨어 함수를
 
       **아마존 홈페이지의 메뉴를 살펴보고 느낀점**
 
-      아마존 홈페이지의 메뉴를 살펴보면 각 메뉴에 마우스 호버 시 우측에 서브메뉴가 나옵니다. 이때 보통의 메뉴바는 우측의 서브메뉴로 마우스를 옮기는 과정에서 서브메뉴가 바뀌는 상황을 종종 보곤 했습니다.  
-      그런데 아마존의 메뉴는 마우스가 움직일 때 다른 메뉴에 호버가 되더라도 서브메뉴가 바뀌지 않았습니다. 사용자가 해당 메뉴를 가리키고 싶은지, 단순히 마우스를 이동하는 중인지 브라우저가 알아채기라도 하듯이 각 상황에 맞게 호버 이벤트가 발생했습니다.  
+      아마존 홈페이지의 메뉴를 살펴보면 각 메뉴에 마우스 호버 시 우측에 서브메뉴가 나옵니다. 이때 보통의 메뉴바는 우측의 서브메뉴로 마우스를 옮기는 과정에서 서브메뉴가 바뀌는 상황을 종종 보곤 했습니다.
+      그런데 아마존의 메뉴는 마우스가 움직일 때 다른 메뉴에 호버가 되더라도 서브메뉴가 바뀌지 않았습니다. 사용자가 해당 메뉴를 가리키고 싶은지, 단순히 마우스를 이동하는 중인지 브라우저가 알아채기라도 하듯이 각 상황에 맞게 호버 이벤트가 발생했습니다.
       원리를 찾아 드롭다운 메뉴에도 적용하고 싶었지만 유의미한 리서치 결과를 얻지 못했습니다. 향후에 역량이 쌓인다면 꼭 도전해 보고 싶은 기능입니다.
 
-<br>
+### 2) 컴포넌트간의 로직을 공유해 보자
 
-### 2) 사용자가 불편한 부분을 없애보자
+이렇게 구현된 드롭 다운 메뉴와 모달 컴포넌트에서 동일한 로직이 반복되는 것을 확인했습니다.  
+[`React` 공식 문서](https://ko.react.dev/learn/reusing-logic-with-custom-hooks)에서 이렇게 컴포넌트 간 공통된 로직은 공유할 수 있도록 자신만의 `Custom Hook`을 작성하는 것을 권장하고 있습니다.
 
-UX를 개선하기 위해 실제 사용 경험을 바탕으로 불편한 부분을 줄이는 것이 중요하다고 생각했습니다.  
+따라서, 두 가지의 상태와 그 상태를 트리거 하는 함수를 공통된 `Custom Hook`으로 직접 구현해 봤습니다.
+
+```js
+// useAnimation.js
+function useAnimation() {
+  const [showUi, setShowUi] = useState(false);
+  const [animation, setAnimation] = useState(false);
+
+  const handler = () => {
+    if (showUi) {
+      setAnimation(false);
+      setTimeout(() => {
+        setShowUi(false);
+      }, TIME.DETAIL_TRANSITION * 1000);
+    } else {
+      setAnimation(true);
+      setShowUi(true);
+    }
+  };
+
+  return [showUi, animation, handler];
+}
+
+// ErrorListPage.js
+const [showUi, animation, handler] = useAnimation();
+
+return (
+  ...
+  {showUi && (
+    <ModalBox
+      closeModal={handler}
+      showModal={showUi}
+      error={selectedError}
+      animation={animation}
+    >
+      <ErrorDetailPage error={selectedError} />
+    </ModalBox>
+  )}
+)
+```
+
+### 3) 사용자가 불편한 부분을 없애보자
+
+UX를 개선하기 위해 실제 사용 경험을 바탕으로 불편한 부분을 줄이는 것이 중요하다고 생각했습니다.
 따라서 부트 캠프 동기분들께 실제로 사용해 보고 불편한 점이 무엇인지 듣고 개선 반영을 해봤습니다.
 
 - 회원 가입, 로그인 페이지
@@ -505,56 +547,53 @@ UX를 개선하기 위해 실제 사용 경험을 바탕으로 불편한 부분�
   따라서 클립보드와 토스트 팝업을 설정해 버튼하나로 KEY값을 복사하고 바로 붙여넣을 수 있도록 구현했습니다.
 
     <img width="500" src="https://github.com/gunhwalee/spycat-server/assets/110829006/b165a2e2-a4de-433e-aaf6-554a5a6ef81a">
-  <br>
-
-## 5. 클라이언트와 서버의 통신문제?
 
 <br>
+
+## 5. 클라이언트와 서버의 통신문제?
 
 ### 1) 무분별한 서버요청을 차단해 보자
 
 - 문제점
 
-클라이언트에서 들어오는 요청은 클라이언트 주소에 접속한 사용자에 한해서 일어나는 일입니다.
-하지만 `npm`패키지에서 들어오는 요청은 `npm`을 사용할 줄 아는 사람이라면 누구나 요청 전송이 가능했습니다.
-또한 클라이언트 사용자는 인증 토큰을 통해 식별이 가능했지만, `npm`패키지를 사용하는 프로젝트(여기서는 함수를 호출한 사용자의 서버)를 식별할 방법이 없다는 문제도 있었습니다.
+  클라이언트에서 들어오는 요청은 클라이언트 주소에 접속한 사용자에 한해서 일어나는 일입니다.
+  하지만 `npm`패키지에서 들어오는 요청은 `npm`을 사용할 줄 아는 사람이라면 누구나 요청 전송이 가능했습니다.
+  또한 클라이언트 사용자는 인증 토큰을 통해 식별이 가능했지만, `npm`패키지를 사용하는 프로젝트(여기서는 함수를 호출한 사용자의 서버)를 식별할 방법이 없다는 문제도 있었습니다.
 
 - 접근 방법
 
-인증과 API KEY에 대해 리서치해 보고 그 차이점을 정리해 봤습니다.
+  인증과 API KEY에 대해 리서치해 보고 그 차이점을 정리해 봤습니다.
 
-|                            사용자 인증                            |                   API KEY                   |
-| :---------------------------------------------------------------: | :-----------------------------------------: |
-|        앱이나 사이트의 사용자를 식별 (인증/Authentication)        |      API를 호출하는 앱이나 사이트 식별      |
-| 사용자에게 요청을 위한 접근 권한 여부를 확인 (인가/Authorization) | 프로젝트가 API에 대한 접근 권한 여부를 확인 |
+  |                            사용자 인증                            |                   API KEY                   |
+  | :---------------------------------------------------------------: | :-----------------------------------------: |
+  |        앱이나 사이트의 사용자를 식별 (인증/Authentication)        |      API를 호출하는 앱이나 사이트 식별      |
+  | 사용자에게 요청을 위한 접근 권한 여부를 확인 (인가/Authorization) | 프로젝트가 API에 대한 접근 권한 여부를 확인 |
 
-따라서 사이트 사용자에게 등록한 서버마다 API KEY를 발급하고 DB의 스키마에 추가함으로써 API를 호출하는 프로젝트에 권한을 부여할 수 있었습니다.
+  따라서 사이트 사용자에게 등록한 서버마다 API KEY를 발급하고 DB의 스키마에 추가함으로써 API를 호출하는 프로젝트에 권한을 부여할 수 있었습니다.
 
- <img width="400" src="https://github.com/gunhwalee/spycat-client/assets/110829006/fc740342-412e-412a-bae2-48caaf2569be" alt="server list">
+  <img width="400" src="https://github.com/gunhwalee/spycat-client/assets/110829006/fc740342-412e-412a-bae2-48caaf2569be" alt="server list">
 
-발급된 키를 사용자가 `npm`패키지 함수의 인수로 넘겨주어 서버로 전송하는 요청에서 식별코자 했습니다. 하지만 일반적인 미들웨어 함수의 경우 인자로 `req`객체, `res`객체, `next`콜백 함수 세 가지를 받기 때문에 API KEY를 매개변수로 추가할 수 없었습니다.
+  발급된 키를 사용자가 `npm`패키지 함수의 인수로 넘겨주어 서버로 전송하는 요청에서 식별코자 했습니다. 하지만 일반적인 미들웨어 함수의 경우 인자로 `req`객체, `res`객체, `next`콜백 함수 세 가지를 받기 때문에 API KEY를 매개변수로 추가할 수 없었습니다.
 
-따라서 작성한 미들웨어 함수를 `Configurable middleware`로 수정했습니다.
+  따라서 작성한 미들웨어 함수를 `Configurable middleware`로 수정했습니다.
 
-일반 매개변수를 받는 함수를 `exports`객체의 속성으로 추가하고, 매개변수를 기반으로 구현된 함수를 반환함으로써 미들웨어에 매개변수를 추가할 수 있었습니다.
+  일반 매개변수를 받는 함수를 `exports`객체의 속성으로 추가하고, 매개변수를 기반으로 구현된 함수를 반환함으로써 미들웨어에 매개변수를 추가할 수 있었습니다.
 
-```js
-// npm module
-exports.trafficParser = function (apikey) {
- return async function (req, res, next) {
-   // Implement the middleware function based on the parameter
- };
-};
+  ```js
+  // npm module
+  exports.trafficParser = function (apikey) {
+   return async function (req, res, next) {
+     // Implement the middleware function based on the parameter
+   };
+  };
 
-// server.js
-...
+  // server.js
+  ...
 
-app.use(trafficParser("APIKEY"));
+  app.use(trafficParser("APIKEY"));
 
-...
-```
-
-  <br>
+  ...
+  ```
 
 ### 2) 로그인 쿠키 문제
 
@@ -591,8 +630,8 @@ app.use(trafficParser("APIKEY"));
     );
   ```
 
-`sameSite`속성 설정 후 문제가 해결될 것이라 생각했지만 `typeError: option sameSite is invalid`라는 에러가 발생했습니다.  
-리서치 결과 다행히 `express` 버전 문제였고 버전 업데이트 후 쉽게 해결할 수 있었습니다. (`express-generator`로 생성할 경우 4.16버전이 설치되는데 해당버전에서는 `sameSite` 옵션을 지원하지 않습니다.)
+  `sameSite`속성 설정 후 문제가 해결될 것이라 생각했지만 `typeError: option sameSite is invalid`라는 에러가 발생했습니다.  
+  리서치 결과 다행히 `express` 버전 문제였고 버전 업데이트 후 쉽게 해결할 수 있었습니다. (`express-generator`로 생성할 경우 4.16버전이 설치되는데 해당버전에서는 `sameSite` 옵션을 지원하지 않습니다.)
 
 # Features
 
@@ -607,7 +646,7 @@ app.use(trafficParser("APIKEY"));
 
 # Tech Stacks
 
-## Frontend
+**Frontend**
 
 - React
 - Redux
@@ -620,7 +659,7 @@ Redux는 하나의 저장소로 공유 상태를 관리하는 라이브러리로
 또한 엄격한 단방향 데이터 흐름을 제공하고, 이전 상태와 액션 객체를 받아 상태를 변경하는 리듀서 함수가 순수함수로 구성되기 때문에 예측가능하고 추적하기 쉬운 상태관리를 제공해줍니다.  
 이번 프로젝트의 경우 복잡한 리액트 구조와 공유 상태를 보다 쉽게 관리하기 위해 Redux를 선정했습니다.
 
-## Backend
+**Backend**
 
 - Node.js
 - Express
