@@ -173,10 +173,12 @@ exports.deleteServerInfo = async (req, res, next) => {
       element => !element.equals(server._id),
     );
 
-    await User.findByIdAndUpdate(user._id, { servers: newServers });
+    const newUser = await User.findByIdAndUpdate(user._id, {
+      servers: newServers,
+    });
+
+    res.send({ result: "ok", servers: newUser.servers });
   } catch (err) {
     return next(err);
   }
-
-  res.send({ result: "ok" });
 };
