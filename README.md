@@ -5,6 +5,22 @@ Spy Cat에서 자신의 서버를 등록하고, 간단한 미들웨어 함수를
 
 👉[지금 바로 사용해보기](https://spycat.netlify.app)
 
+# Preview
+
+- **비로그인**
+  - 예시 샘플 페이지
+
+  <img src="https://github.com/gunhwalee/spycat-server/assets/110829006/6a177964-37ef-421e-89a2-fa8a6db81693">
+
+- **로그인**
+  - 서버 등록 및 코드 세팅
+ 
+  <img src="https://github.com/gunhwalee/spycat-server/assets/110829006/4e8e9b6e-5e72-4fd4-9e9b-97670b150957">
+
+  - 트래픽, 에러 트래킹
+ 
+  <img src="https://github.com/gunhwalee/spycat-server/assets/110829006/79bb4d6d-7339-498f-9b91-782a4398ee93">
+
 # Table of Contents
 
 - [Motivation](#motivation)
@@ -26,6 +42,7 @@ Spy Cat에서 자신의 서버를 등록하고, 간단한 미들웨어 함수를
     - [무분별한 서버요청을 차단해 보자](#1-무분별한-서버요청을-차단해-보자)
     - [로그인 쿠키 문제](#2-로그인-쿠키-문제)
 - [Features](#features)
+- [Usage](#usage)
 - [Tech Stacks](#tech-stacks)
 - [Links](#links)
 - [Schedule](#schedule)
@@ -643,6 +660,20 @@ UX를 개선하기 위해 실제 사용 경험을 바탕으로 불편한 부분�
 - 각 차트는 날짜를 클릭해 해당 날짜에 발생한 라우팅별 정보, 발생 시간을 확인할 수 있습니다.
 - 사용자는 마이페이지에서 등록된 서버를 관리할 수 있고(생성, 삭제), 서버마다 발급된 API KEY를 확인할 수 있습니다.
 - API KEY는 클립보드에 복사가 가능하며, 재발급 버튼으로 재발급 받을 수 있습니다.
+
+# Usage
+
+- 홈페이지의 안내에 따라 회원가입, 로그인을 진행합니다.
+- 로그인 후 좌측의 '서버 추가'버튼을 눌러 관리하고자 하는 서버를 등록합니다.
+  - 등록할 서버의 명칭과 주소를 필수로 입력해야 합니다.
+- 사용자 이름을 눌러 마이페이지로 이동하면 등록한 서버와 발급된 API KEY를 확인할 수 있습니다.
+- 관리하고자 하는 서버의 소스코드에서 `spycat-tracker` 모듈을 설치합니다.
+- 설치된 모듈에서 `trafficParser`와 `errorParser` 함수를 불러옵니다.
+  - `const { trafficParser, errorParser } = require("spycat-tracker");`
+- `trafficParser`는 라우트 분기점 위에, `errorParser`는 에러 핸들러 위에서 선언합니다.
+  - `app.use(trafficParser("Your API KEY"));`
+  - 이때 서버마다 발급받은 API KEY를 인수로 넘겨줍니다.
+- 관리하고자 하는 서버를 실행시켜 트래픽과 에러가 정상적으로 트래킹되는지 Spy Cat 홈페이지에서 확인합니다.
 
 # Tech Stacks
 
