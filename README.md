@@ -3,23 +3,9 @@
 **Spy Cat**은 사용자가 보유 중인 서버의 트래픽과 에러를 시각화해주는 웹 애플리케이션입니다.  
 Spy Cat에서 자신의 서버를 등록하고, 간단한 미들웨어 함수를 서버 소스코드에 추가해 다양한 정보를 쉽게 시각화된 차트로 확인할 수 있습니다.
 
+<img src="https://github.com/gunhwalee/spycat-server/assets/110829006/6a177964-37ef-421e-89a2-fa8a6db81693" width="500">
+
 👉[지금 바로 사용해보기](https://spycat.netlify.app)
-
-# Preview
-
-- **비로그인**
-  - 예시 샘플 페이지
-
-  <img src="https://github.com/gunhwalee/spycat-server/assets/110829006/6a177964-37ef-421e-89a2-fa8a6db81693">
-
-- **로그인**
-  - 서버 등록 및 코드 세팅
- 
-  <img src="https://github.com/gunhwalee/spycat-server/assets/110829006/4e8e9b6e-5e72-4fd4-9e9b-97670b150957">
-
-  - 트래픽, 에러 트래킹
- 
-  <img src="https://github.com/gunhwalee/spycat-server/assets/110829006/79bb4d6d-7339-498f-9b91-782a4398ee93">
 
 # Table of Contents
 
@@ -49,11 +35,11 @@ Spy Cat에서 자신의 서버를 등록하고, 간단한 미들웨어 함수를
 
 # Motivation
 
-이번 프로젝트의 목표는 '**현재 사용할 수 있는 MERN STACK을 다듬고 잘 활용해 실제와 같은 서비스를 구현해 보자**'였습니다.
+종종 '하루에 내 서버에 들어오는 요청은 얼마나 될까?'라는 생각을 해보곤 했습니다.
 
-개발자로서 기술적으로 성장하는 것도 중요했지만 이번 프로젝트에서는 새로운 것을 시도하는 것보다 지금 할 수 있는 것들을 더 다듬고 개선하는 것을 중점으로 잡았습니다.
+그러던 중에 Datadog과 Newrelic에서 관련 서비스를 제공하는 것을 확인하고 유사한 Observability 애플리케이션을 만들어보고자 했습니다.
 
-프로젝트 아이디어를 고민하던 중 New Relic에서 서비스하는 옵저버빌리티 플랫폼을 구현함으로써 그동안 배웠던 기술 스택들을 다듬고 개선할 기회라고 생각했습니다.
+서버에서 발생한 트래픽과 에러를 수집하고 이를 시각화하면서 클라이언트와 서버에서 방대한 양의 데이터를 효율적으로 다룰 기회라고 생각했습니다.
 
 # Challenges
 
@@ -674,6 +660,14 @@ UX를 개선하기 위해 실제 사용 경험을 바탕으로 불편한 부분�
   - `app.use(trafficParser("Your API KEY"));`
   - 이때 서버마다 발급받은 API KEY를 인수로 넘겨줍니다.
 - 관리하고자 하는 서버를 실행시켜 트래픽과 에러가 정상적으로 트래킹되는지 Spy Cat 홈페이지에서 확인합니다.
+
+**서버 등록 및 코드 세팅**
+ 
+  <img src="https://github.com/gunhwalee/spycat-server/assets/110829006/4e8e9b6e-5e72-4fd4-9e9b-97670b150957" width="500">
+
+**트래픽, 에러 트래킹**
+ 
+  <img src="https://github.com/gunhwalee/spycat-server/assets/110829006/79bb4d6d-7339-498f-9b91-782a4398ee93" width="500">
 
 # Tech Stacks
 
