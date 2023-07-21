@@ -1,9 +1,9 @@
-const express = require("express");
-const logger = require("morgan");
-const cors = require("cors");
-const cookieParser = require("cookie-parser");
+import express, { Express } from "express";
+import logger from "morgan";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 
-const expressLoader = async app => {
+export const expressLoader = async (app: Express) => {
   app.use(
     cors({
       origin: "https://spycat.netlify.app",
@@ -15,5 +15,3 @@ const expressLoader = async app => {
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
 };
-
-module.exports = expressLoader;

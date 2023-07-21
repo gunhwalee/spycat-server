@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const serverSchema = new mongoose.Schema({
+export const Server = new mongoose.Schema({
   serverName: { type: String, required: true, trim: true },
   url: { type: String, required: true, trim: true, unique: true },
   traffics: [{ type: mongoose.Schema.Types.ObjectId, ref: "Traffic" }],
@@ -8,4 +8,5 @@ const serverSchema = new mongoose.Schema({
   apikey: { type: String, require: true, unique: true },
 });
 
-module.exports = mongoose.model("Server", serverSchema);
+mongoose.model("Server", Server);
+// module.exports = mongoose.model("Server", serverSchema);

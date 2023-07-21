@@ -1,4 +1,4 @@
-const express = require("express");
+import express from "express";
 const {
   signupValidator,
   loginValidator,
@@ -16,17 +16,15 @@ const {
 } = require("./middlewares/serverHandler");
 const { signupEndpoint } = require("./controllers/user.controller");
 
-const router = express.Router();
+export const usersRouter = express.Router();
 
-router.post("/", signupValidator, createUserInfo, signupEndpoint);
-router.post("/login", loginValidator, loadUserInfo, issueToken);
-router.post("/:id/logout", checkToken, removeRefreshToken);
-router.get("/:id/serverlists", checkToken, loadServerName);
-router.post(
+usersRouter.post("/", signupValidator, createUserInfo, signupEndpoint);
+usersRouter.post("/login", loginValidator, loadUserInfo, issueToken);
+usersRouter.post("/:id/logout", checkToken, removeRefreshToken);
+usersRouter.get("/:id/serverlists", checkToken, loadServerName);
+usersRouter.post(
   "/:id/serverlists",
   checkToken,
   serverInfoValidator,
   createServerInfo,
 );
-
-module.exports = router;

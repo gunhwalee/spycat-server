@@ -1,8 +1,10 @@
+import { NextFunction, Request, Response } from "express";
+
 const { v4: uuidv4 } = require("uuid");
-const Server = require("../../../models/Server");
+import { Server } from "../../../models/Server";
 const User = require("../../../models/User");
 
-exports.apiValidator = async (req, res, next) => {
+export const apiValidator = async (req: Request, res: Response, next: NextFunction) => {
   const { apikey } = req.params;
 
   try {
@@ -22,14 +24,14 @@ exports.apiValidator = async (req, res, next) => {
   next();
 };
 
-exports.regenerateKey = async (req, res, next) => {
+export const regenerateKey = async (req: Request, res: Response, next: NextFunction) => {
   const { apikey } = req.params;
   const newApiKey = uuidv4();
 
   try {
     await Server.findOneAndUpdate({ apikey }, { apikey: newApiKey });
 
-    const user = await User.findById(req.user).populate("servers");
+    const user = await User.findById(req.body.user).populate("servers");
     res.send({
       result: "ok",
       servers: user.servers,
