@@ -16,7 +16,7 @@ function onError(error) {
     throw error;
   }
 
-  const bind = typeof port === "string" ? `Pipe ${PORT}` : `Port ${PORT}`;
+  const bind = typeof PORT === "string" ? `Pipe ${PORT}` : `Port ${PORT}`;
 
   switch (error.code) {
     case "EACCES":
