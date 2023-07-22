@@ -1,12 +1,7 @@
 import express from "express";
 import { apiValidator, regenerateKey } from "./validators/apiValidator";
-const {
-  updateServerInfo,
-  loadTrafficInfo,
-  loadErrorInfo,
-  deleteServerInfo,
-} = require("./middlewares/serverHandler");
-const { checkToken } = require("./validators/jwt");
+import { updateServerInfo, loadTrafficInfo, loadErrorInfo, deleteServerInfo } from "./middlewares/serverHandler";
+import { checkToken } from "./validators/jwt";
 
 export const serverRouter = express.Router();
 

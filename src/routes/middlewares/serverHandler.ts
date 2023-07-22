@@ -15,7 +15,7 @@ const checkUrl = async (url: string) => {
   }
 };
 
-exports.loadServerName = async (req: Request, res: Response, next: NextFunction) => {
+export const loadServerName = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = await User.findById(req.body.user).populate("servers");
     res.send({
@@ -27,7 +27,7 @@ exports.loadServerName = async (req: Request, res: Response, next: NextFunction)
   }
 };
 
-exports.createServerInfo = async (req: Request, res: Response, next: NextFunction) => {
+export const createServerInfo = async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
   const { serverName, url } = req.body;
 
@@ -58,7 +58,7 @@ exports.createServerInfo = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
-exports.updateServerInfo = async (req: Request, res: Response, next: NextFunction) => {
+export const updateServerInfo = async (req: Request, res: Response, next: NextFunction) => {
   const { apikey } = req.params;
   const { type, path, host, errorName, errorMessage, errorStack } = req.body;
 
@@ -109,7 +109,7 @@ exports.updateServerInfo = async (req: Request, res: Response, next: NextFunctio
   });
 };
 
-exports.loadTrafficInfo = async (req: Request, res: Response, next: NextFunction) => {
+export const loadTrafficInfo = async (req: Request, res: Response, next: NextFunction) => {
   const { apikey } = req.params;
 
   try {
@@ -134,7 +134,7 @@ exports.loadTrafficInfo = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-exports.loadErrorInfo = async (req: Request, res: Response, next: NextFunction) => {
+export const loadErrorInfo = async (req: Request, res: Response, next: NextFunction) => {
   const { apikey } = req.params;
 
   try {
@@ -159,7 +159,7 @@ exports.loadErrorInfo = async (req: Request, res: Response, next: NextFunction) 
   }
 };
 
-exports.deleteServerInfo = async (req: Request, res: Response, next: NextFunction) => {
+export const deleteServerInfo = async (req: Request, res: Response, next: NextFunction) => {
   const { url } = req.params;
 
   try {

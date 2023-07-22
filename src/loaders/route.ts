@@ -1,5 +1,4 @@
 import { Express } from "express";
-
 import { indexRouter } from "../routes/index";
 import { usersRouter } from "../routes/users";
 import { serverRouter } from "../routes/server";
