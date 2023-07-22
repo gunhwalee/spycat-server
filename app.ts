@@ -1,6 +1,7 @@
-require("dotenv").config();
-const express = require("express");
-const appLoader = require("./src/loaders/loaders");
+import dotenv from "dotenv";
+dotenv.config();
+import express from "express";
+import { appLoader } from "./src/loaders/loaders";
 
 const app = express();
 

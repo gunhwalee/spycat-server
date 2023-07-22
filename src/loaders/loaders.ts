@@ -4,11 +4,9 @@ import { expressLoader } from "./express";
 import { routeLoader } from "./route";
 import { errorHandlerLoader } from "./error";
 
-const appLoader = async (app: Express) => {
+export const appLoader = async (app: Express) => {
   await dbLoader();
   await expressLoader(app);
   await routeLoader(app);
   await errorHandlerLoader(app);
 };
-
-module.exports = appLoader;

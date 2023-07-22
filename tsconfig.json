@@ -6,7 +6,7 @@
     "noImplicitAny": true,
     "moduleResolution": "node",
     "sourceMap": true,
-    "outDir": "dist",
+    "outDir": "./dist",
     "baseUrl": ".",
     "paths": {
       "*": [
@@ -16,6 +16,6 @@
     "types": ["node"]
   },
   "include": [
-    "src/**/*", "app.ts"
+    "src/**/*", "app.ts", "bin/www", "models/**/*"
   ]
 }
