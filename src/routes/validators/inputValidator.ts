@@ -1,51 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import Joi from "joi";
-import { joiPasswordExtendCore } from "joi-password";
+import { signupSchema, loginSchema, serverSchema } from "./joi";
 
-const joipassword = Joi.extend(joiPasswordExtendCore);
-
-const signupSchema = Joi.object().keys({
-  name: Joi.string().min(1).max(10).required(),
-  id: Joi.string().email().required().trim(),
-  pw: joipassword
-    .string()
-    .minOfLowercase(1)
-    .minOfUppercase(1)
-    .minOfNumeric(1)
-    .noWhiteSpaces()
-    .min(8)
-    .max(16)
-    .required(),
-  pwCheck: joipassword
-    .string()
-    .minOfLowercase(1)
-    .minOfUppercase(1)
-    .minOfNumeric(1)
-    .noWhiteSpaces()
-    .min(8)
-    .max(16)
-    .required(),
-});
-
-const loginSchema = Joi.object().keys({
-  id: Joi.string().email().required().trim(),
-  pw: joipassword
-    .string()
-    .minOfLowercase(1)
-    .minOfUppercase(1)
-    .minOfNumeric(1)
-    .noWhiteSpaces()
-    .min(8)
-    .max(16)
-    .required(),
-});
-
-const serverSchema = Joi.object().keys({
-  serverName: Joi.string().required(),
-  url: Joi.string().trim().required(),
-});
-
-exports.signupValidator = (req: Request, res: Response, next: NextFunction) => {
+export const signupValidator = (req: Request, res: Response, next: NextFunction) => {
   const validation = signupSchema.validate(req.body);
 
   if (validation.error) {
@@ -77,7 +33,7 @@ exports.signupValidator = (req: Request, res: Response, next: NextFunction) => {
   next();
 };
 
-exports.loginValidator = (req: Request, res: Response, next: NextFunction) => {
+export const loginValidator = (req: Request, res: Response, next: NextFunction) => {
   const validation = loginSchema.validate(req.body);
 
   if (validation.error) {
@@ -101,7 +57,7 @@ exports.loginValidator = (req: Request, res: Response, next: NextFunction) => {
   next();
 };
 
-exports.serverInfoValidator = (req: Request, res: Response, next: NextFunction) => {
+export const serverInfoValidator = (req: Request, res: Response, next: NextFunction) => {
   const validation = serverSchema.validate(req.body);
 
   if (validation.error) {

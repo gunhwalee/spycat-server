@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./dist/www",
-    "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/www\"",
+    "start": "node ./bin/www",
+    "dev": "concurrently \"npx tsc --watch\" \"nodemon -q ./bin/www\"",
     "build": "npx tsc"
   },
   "dependencies": {
