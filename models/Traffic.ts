@@ -6,7 +6,7 @@ interface ITraffic {
   host: string,
   createdAt?: Date,
   expiredAt?: Date,
-  server?: string
+  server: Schema.Types.ObjectId
 }
 
 const trafficSchema = new Schema<ITraffic>({

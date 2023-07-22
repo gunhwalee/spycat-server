@@ -4,7 +4,7 @@ interface IUser {
   id: string,
   pw: string,
   name: string,
-  servers: string[],
+  servers: Schema.Types.ObjectId[],
   refreshToken?: string
 }
 

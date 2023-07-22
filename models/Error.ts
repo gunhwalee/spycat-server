@@ -9,7 +9,7 @@ interface IError {
   errorStack: string,
   createdAt?: Date,
   expiredAt?: Date,
-  server?: string
+  server: Schema.Types.ObjectId
 }
 
 const errorSchema = new Schema<IError>({

@@ -3,8 +3,8 @@ import { Schema, model } from "mongoose";
 interface  IServer {
   serverName: string,
   url: string,
-  traffics: string[],
-  errorLists: string[],
+  traffics: Schema.Types.ObjectId[],
+  errorLists: Schema.Types.ObjectId[],
   apikey: string
 }
 
