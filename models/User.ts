@@ -1,10 +1,10 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, Types } from "mongoose";
 
 interface IUser {
   id: string,
   pw: string,
   name: string,
-  servers: Schema.Types.ObjectId[],
+  servers: Types.ObjectId[],
   refreshToken?: string
 }
 

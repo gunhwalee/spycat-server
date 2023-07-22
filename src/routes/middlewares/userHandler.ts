@@ -1,17 +1,18 @@
-const bcrypt = require("bcrypt");
-const User = require("../../../models/User");
+import { Request, Response, NextFunction } from "express";
+import bcrypt from "bcrypt";
+import { User } from "../../../models/User";
 
-const checkId = async id => {
+const checkId = async (id: string) => {
   try {
     const user = await User.findOne({ id });
     if (user) return user;
     return false;
   } catch (err) {
-    throw Error(500);
+    throw Error("500");
   }
 };
 
-exports.createUserInfo = async (req, res, next) => {
+export const createUserInfo = async (req: Request, res: Response, next: NextFunction) => {
   const { id, pw, name } = req.body;
 
   try {
@@ -23,7 +24,7 @@ exports.createUserInfo = async (req, res, next) => {
       });
     }
 
-    const hash = await bcrypt.hash(pw, Number(process.env.SALT));
+    const hash: string = await bcrypt.hash(pw, Number(process.env.SALT));
     await User.create({ id, pw: hash, name });
   } catch (err) {
     return next(err);
@@ -32,7 +33,7 @@ exports.createUserInfo = async (req, res, next) => {
   next();
 };
 
-exports.loadUserInfo = async (req, res, next) => {
+export const loadUserInfo = async (req: Request, res: Response, next: NextFunction) => {
   const { id, pw } = req.body;
 
   try {
@@ -45,7 +46,7 @@ exports.loadUserInfo = async (req, res, next) => {
       });
     }
 
-    const match = await bcrypt.compare(pw, user.pw);
+    const match: boolean = await bcrypt.compare(pw, user.pw);
     if (!match) {
       return res.send({
         result: "error",
@@ -53,7 +54,7 @@ exports.loadUserInfo = async (req, res, next) => {
       });
     }
 
-    req.user = user._id;
+    req.body.user = user._id;
   } catch (err) {
     return next(err);
   }
@@ -61,9 +62,9 @@ exports.loadUserInfo = async (req, res, next) => {
   next();
 };
 
-exports.removeRefreshToken = async (req, res, next) => {
+export const removeRefreshToken = async (req: Request<{ id: string }>, res: Response, next: NextFunction) => {
   const { id } = req.params;
-  const obj = { refreshToken: null };
+  const obj: { refreshToken: null } = { refreshToken: null };
 
   try {
     await User.findByIdAndUpdate(id, obj);

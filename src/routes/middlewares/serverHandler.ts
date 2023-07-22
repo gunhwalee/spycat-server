@@ -1,22 +1,23 @@
-const { v4: uuidv4 } = require("uuid");
-const User = require("../../../models/User");
-const Server = require("../../../models/Server");
-const Traffic = require("../../../models/Traffic");
-const ServerError = require("../../../models/Error");
+import { Request, Response, NextFunction } from "express";
+import { v4 as uuidv4 } from "uuid";
+import { User } from "../../../models/User";
+import { Server } from "../../../models/Server";
+import { Traffic } from "../../../models/Traffic";
+import { ServerError } from "../../../models/Error";
 
-const checkUrl = async url => {
+const checkUrl = async (url: string) => {
   try {
     const server = await Server.findOne({ url });
     if (server) return server;
     return false;
   } catch (err) {
-    throw Error(500);
+    throw Error("500");
   }
 };
 
-exports.loadServerName = async (req, res, next) => {
+exports.loadServerName = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const user = await User.findById(req.user).populate("servers");
+    const user = await User.findById(req.body.user).populate("servers");
     res.send({
       result: "ok",
       servers: user.servers,
@@ -26,7 +27,7 @@ exports.loadServerName = async (req, res, next) => {
   }
 };
 
-exports.createServerInfo = async (req, res, next) => {
+exports.createServerInfo = async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
   const { serverName, url } = req.body;
 
@@ -57,7 +58,7 @@ exports.createServerInfo = async (req, res, next) => {
   }
 };
 
-exports.updateServerInfo = async (req, res, next) => {
+exports.updateServerInfo = async (req: Request, res: Response, next: NextFunction) => {
   const { apikey } = req.params;
   const { type, path, host, errorName, errorMessage, errorStack } = req.body;
 
@@ -108,7 +109,7 @@ exports.updateServerInfo = async (req, res, next) => {
   });
 };
 
-exports.loadTrafficInfo = async (req, res, next) => {
+exports.loadTrafficInfo = async (req: Request, res: Response, next: NextFunction) => {
   const { apikey } = req.params;
 
   try {
@@ -133,7 +134,7 @@ exports.loadTrafficInfo = async (req, res, next) => {
   }
 };
 
-exports.loadErrorInfo = async (req, res, next) => {
+exports.loadErrorInfo = async (req: Request, res: Response, next: NextFunction) => {
   const { apikey } = req.params;
 
   try {
@@ -158,7 +159,7 @@ exports.loadErrorInfo = async (req, res, next) => {
   }
 };
 
-exports.deleteServerInfo = async (req, res, next) => {
+exports.deleteServerInfo = async (req: Request, res: Response, next: NextFunction) => {
   const { url } = req.params;
 
   try {
@@ -168,7 +169,7 @@ exports.deleteServerInfo = async (req, res, next) => {
     await Traffic.deleteMany({ server: server._id });
     await ServerError.deleteMany({ server: server._id });
 
-    const user = await User.findById(req.user);
+    const user = await User.findById(req.body.user);
     const newServers = user.servers.filter(
       element => !element.equals(server._id),
     );

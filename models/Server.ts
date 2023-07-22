@@ -1,10 +1,10 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, Types } from "mongoose";
 
 interface  IServer {
   serverName: string,
   url: string,
-  traffics: Schema.Types.ObjectId[],
-  errorLists: Schema.Types.ObjectId[],
+  traffics: Types.ObjectId[],
+  errorLists: Types.ObjectId[],
   apikey: string
 }
 

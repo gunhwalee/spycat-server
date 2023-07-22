@@ -1,10 +1,9 @@
-import { NextFunction, Request, Response } from "express";
-
-const { v4: uuidv4 } = require("uuid");
+import { Request, Response, NextFunction } from "express";
+import { v4 as uuidv4 } from "uuid";
 import { Server } from "../../../models/Server";
-const User = require("../../../models/User");
+import { User } from "../../../models/User";
 
-export const apiValidator = async (req: Request, res: Response, next: NextFunction) => {
+export const apiValidator = async (req: Request<{ apikey: string }>, res: Response, next: NextFunction) => {
   const { apikey } = req.params;
 
   try {
@@ -24,7 +23,7 @@ export const apiValidator = async (req: Request, res: Response, next: NextFuncti
   next();
 };
 
-export const regenerateKey = async (req: Request, res: Response, next: NextFunction) => {
+export const regenerateKey = async (req: Request<{ apikey: string }>, res: Response, next: NextFunction) => {
   const { apikey } = req.params;
   const newApiKey = uuidv4();
 

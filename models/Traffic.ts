@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, Types } from "mongoose";
 import { Server } from "./Server";
 
 interface ITraffic {
@@ -6,7 +6,7 @@ interface ITraffic {
   host: string,
   createdAt?: Date,
   expiredAt?: Date,
-  server: Schema.Types.ObjectId
+  server: Types.ObjectId
 }
 
 const trafficSchema = new Schema<ITraffic>({

@@ -1,5 +1,6 @@
-const Joi = require("joi");
-const { joiPasswordExtendCore } = require("joi-password");
+import { Request, Response, NextFunction } from "express";
+import Joi from "joi";
+import { joiPasswordExtendCore } from "joi-password";
 
 const joipassword = Joi.extend(joiPasswordExtendCore);
 
@@ -44,7 +45,7 @@ const serverSchema = Joi.object().keys({
   url: Joi.string().trim().required(),
 });
 
-exports.signupValidator = (req, res, next) => {
+exports.signupValidator = (req: Request, res: Response, next: NextFunction) => {
   const validation = signupSchema.validate(req.body);
 
   if (validation.error) {
@@ -76,7 +77,7 @@ exports.signupValidator = (req, res, next) => {
   next();
 };
 
-exports.loginValidator = (req, res, next) => {
+exports.loginValidator = (req: Request, res: Response, next: NextFunction) => {
   const validation = loginSchema.validate(req.body);
 
   if (validation.error) {
@@ -100,7 +101,7 @@ exports.loginValidator = (req, res, next) => {
   next();
 };
 
-exports.serverInfoValidator = (req, res, next) => {
+exports.serverInfoValidator = (req: Request, res: Response, next: NextFunction) => {
   const validation = serverSchema.validate(req.body);
 
   if (validation.error) {
