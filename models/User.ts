@@ -1,11 +1,19 @@
-const mongoose = require("mongoose");
+import { Schema, model } from "mongoose";
 
-const userSchema = new mongoose.Schema({
+interface IUser {
+  id: string,
+  pw: string,
+  name: string,
+  servers: string[],
+  refreshToken?: string
+}
+
+const userSchema = new Schema<IUser>({
   id: { type: String, required: true, unique: true, trim: true },
   pw: { type: String, required: true, trim: true },
   name: { type: String, required: true, trim: true },
-  servers: [{ type: mongoose.Schema.Types.ObjectId, ref: "Server" }],
+  servers: [{ type: Schema.Types.ObjectId, ref: "Server" }],
   refreshToken: { type: String },
 });
 
-module.exports = mongoose.model("User", userSchema);
+export const User = model<IUser>("User", userSchema);

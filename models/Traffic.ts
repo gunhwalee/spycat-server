@@ -1,15 +1,23 @@
-const mongoose = require("mongoose");
+import { Schema, model } from "mongoose";
+import { Server } from "./Server";
 
-const trafficSchema = new mongoose.Schema({
+interface ITraffic {
+  path: string,
+  host: string,
+  createdAt?: Date,
+  expiredAt?: Date,
+  server?: string
+}
+
+const trafficSchema = new Schema<ITraffic>({
   path: { type: String, required: true, trim: true },
   host: { type: String, required: true, trim: true },
   createdAt: { type: Date, default: Date.now },
   expiredAt: { type: Date, expires: 1 },
-  server: { type: mongoose.Schema.Types.ObjectId, ref: "Server" },
+  server: { type: Schema.Types.ObjectId, ref: "Server" },
 });
 
-const Traffic = mongoose.model("Traffic", trafficSchema);
-const Server = mongoose.model("Server");
+export const Traffic = model<ITraffic>("Traffic", trafficSchema);
 
 Traffic.watch().on("change", async change => {
   if (change.operationType === "insert") {
@@ -27,5 +35,3 @@ Traffic.watch().on("change", async change => {
     await Server.updateMany({ traffics: _id }, { $pull: { traffics: _id } });
   }
 });
-
-module.exports = Traffic;

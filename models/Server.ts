@@ -1,12 +1,19 @@
-import mongoose from "mongoose";
+import { Schema, model } from "mongoose";
 
-export const Server = new mongoose.Schema({
+interface  IServer {
+  serverName: string,
+  url: string,
+  traffics: string[],
+  errorLists: string[],
+  apikey: string
+}
+
+const serverSchema = new Schema<IServer>({
   serverName: { type: String, required: true, trim: true },
   url: { type: String, required: true, trim: true, unique: true },
-  traffics: [{ type: mongoose.Schema.Types.ObjectId, ref: "Traffic" }],
-  errorLists: [{ type: mongoose.Schema.Types.ObjectId, ref: "ServerError" }],
+  traffics: [{ type: Schema.Types.ObjectId, ref: "Traffic" }],
+  errorLists: [{ type: Schema.Types.ObjectId, ref: "ServerError" }],
   apikey: { type: String, require: true, unique: true },
-});
+})
 
-mongoose.model("Server", Server);
-// module.exports = mongoose.model("Server", serverSchema);
+export const Server = model<IServer>("Server", serverSchema);

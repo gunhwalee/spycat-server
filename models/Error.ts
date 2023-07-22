@@ -1,6 +1,18 @@
-const mongoose = require("mongoose");
+import { Schema, model } from "mongoose";
+import { Server } from "./Server";
 
-const errorSchema = new mongoose.Schema({
+interface IError {
+  path: string,
+  host: string,
+  errorName: string,
+  errorMessage: string,
+  errorStack: string,
+  createdAt?: Date,
+  expiredAt?: Date,
+  server?: string
+}
+
+const errorSchema = new Schema<IError>({
   path: { type: String, required: true, trim: true },
   host: { type: String, required: true, trim: true },
   errorName: { type: String },
@@ -8,11 +20,10 @@ const errorSchema = new mongoose.Schema({
   errorStack: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
   expiredAt: { type: Date, expires: 1 },
-  server: { type: mongoose.Schema.Types.ObjectId, ref: "Server" },
+  server: { type: Schema.Types.ObjectId, ref: "Server" },
 });
 
-const ServerError = mongoose.model("ServerError", errorSchema);
-const Server = mongoose.model("Server");
+export const ServerError = model<IError>("ServerError", errorSchema);
 
 ServerError.watch().on("change", async change => {
   if (change.operationType === "insert") {
@@ -30,5 +41,3 @@ ServerError.watch().on("change", async change => {
     await Server.updateMany({ traffics: _id }, { $pull: { traffics: _id } });
   }
 });
-
-module.exports = ServerError;
