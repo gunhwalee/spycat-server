@@ -5,6 +5,8 @@ Spy Cat에서 자신의 서버를 등록하고, 간단한 미들웨어 함수를
 
 <img src="https://github.com/gunhwalee/spycat-server/assets/110829006/6a177964-37ef-421e-89a2-fa8a6db81693" width="500">
 
+🎥[시연 영상 보러가기](https://youtu.be/cUFZ1A8MCoU?t=2344)
+
 👉[지금 바로 사용해보기](https://spycat.netlify.app)
 
 # Table of Contents
@@ -699,7 +701,7 @@ MongoDB는 대표적인 비관계형 데이터베이스로 유연한 스키마 �
 
 # Links
 
-Live Server
+Live Site
 
 - [Spy Cat](https://spycat.netlify.app)
 
