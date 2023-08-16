@@ -7,7 +7,7 @@ Spy Cat에서 자신의 서버를 등록하고, 간단한 미들웨어 함수를
 
 🎥[시연 영상 보러가기](https://youtu.be/cUFZ1A8MCoU?t=2344)
 
-👉[지금 바로 사용해보기](https://spycat.netlify.app)
+👉[지금 바로 사용해보기](https://spycat.fun)
 
 # Table of Contents
 
