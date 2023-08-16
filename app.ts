@@ -9,4 +9,4 @@ const app = express();
   await appLoader(app);
 })();
 
-module.exports = app;
+export default app;

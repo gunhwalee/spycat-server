@@ -1,6 +1,6 @@
-const http = require("http");
-const debug = require("debug")("spycat-server:server");
-const app = require("../dist/app");
+import http from "http";
+import app from "../app";
+import debug from "debug";
 
 const PORT = process.env.PORT || "8080";
 app.set("port", PORT);
@@ -11,7 +11,7 @@ server.listen(PORT);
 server.on("error", onError);
 server.on("listening", onListening);
 
-function onError(error) {
+function onError(error: any) {
   if (error.syscall !== "listen") {
     throw error;
   }
@@ -34,6 +34,6 @@ function onError(error) {
 
 function onListening() {
   const addr = server.address();
-  const bind = typeof addr === "string" ? `pipe ${addr}` : `port ${addr.port}`;
+  const bind = typeof addr === "string" ? `pipe ${addr}` : `port ${addr!.port}`;
   debug(`Listening on ${bind}`);
 }

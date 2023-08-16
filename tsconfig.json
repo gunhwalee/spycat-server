@@ -16,6 +16,7 @@
     "types": ["node"]
   },
   "include": [
-    "src/**/*", "app.ts", "models/**/*"
-  ]
+    "src/**/*", "app.ts", "models/**/*", "bin/www.ts"
+  ],
+  "exclude": ["node_modules"]
 }
