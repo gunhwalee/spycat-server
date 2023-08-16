@@ -47,14 +47,11 @@ const joiPasswordExtension: ExtensionFactory = (joi) => ({
 
 const joi = Joi.extend(joiPasswordExtension)
 
-const passwordSchema = joi
+const passwordSchema = Joi
   .string()
   .min(8)
   .max(16)
-  .minOfLowercase(1)
-  .minOfUppercase(1)
-  .minOfNumeric(1)
-  .noWhiteSpaces()
+  .trim()
   .required();
 
 export const signupSchema = Joi.object().keys({
