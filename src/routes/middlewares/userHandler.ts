@@ -12,7 +12,11 @@ const checkId = async (id: string) => {
   }
 };
 
-export const createUserInfo = async (req: Request, res: Response, next: NextFunction) => {
+export const createUserInfo = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { id, pw, name } = req.body;
 
   try {
@@ -33,7 +37,11 @@ export const createUserInfo = async (req: Request, res: Response, next: NextFunc
   next();
 };
 
-export const loadUserInfo = async (req: Request, res: Response, next: NextFunction) => {
+export const loadUserInfo = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { id, pw } = req.body;
 
   try {
@@ -62,7 +70,11 @@ export const loadUserInfo = async (req: Request, res: Response, next: NextFuncti
   next();
 };
 
-export const removeRefreshToken = async (req: Request<{ id: string }>, res: Response, next: NextFunction) => {
+export const removeRefreshToken = async (
+  req: Request<{ id: string }>,
+  res: Response,
+  next: NextFunction
+) => {
   const { id } = req.params;
   const obj: { refreshToken: null } = { refreshToken: null };
 

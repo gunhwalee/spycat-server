@@ -1,7 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import { signupSchema, loginSchema, serverSchema } from "./joi";
 
-export const signupValidator = (req: Request, res: Response, next: NextFunction) => {
+export const signupValidator = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const validation = signupSchema.validate(req.body);
 
   if (validation.error) {
@@ -33,7 +37,11 @@ export const signupValidator = (req: Request, res: Response, next: NextFunction)
   next();
 };
 
-export const loginValidator = (req: Request, res: Response, next: NextFunction) => {
+export const loginValidator = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const validation = loginSchema.validate(req.body);
 
   if (validation.error) {
@@ -57,7 +65,11 @@ export const loginValidator = (req: Request, res: Response, next: NextFunction) 
   next();
 };
 
-export const serverInfoValidator = (req: Request, res: Response, next: NextFunction) => {
+export const serverInfoValidator = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const validation = serverSchema.validate(req.body);
 
   if (validation.error) {

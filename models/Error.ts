@@ -2,14 +2,14 @@ import { Schema, model, Types } from "mongoose";
 import { Server } from "./Server";
 
 interface IError {
-  path: string,
-  host: string,
-  errorName: string,
-  errorMessage: string,
-  errorStack: string,
-  createdAt?: Date,
-  expiredAt?: Date,
-  server: Types.ObjectId
+  path: string;
+  host: string;
+  errorName: string;
+  errorMessage: string;
+  errorStack: string;
+  createdAt?: Date;
+  expiredAt?: Date;
+  server: Types.ObjectId;
 }
 
 const errorSchema = new Schema<IError>({
@@ -25,7 +25,7 @@ const errorSchema = new Schema<IError>({
 
 export const ServerError = model<IError>("ServerError", errorSchema);
 
-ServerError.watch().on("change", async change => {
+ServerError.watch().on("change", async (change) => {
   if (change.operationType === "insert") {
     const { _id } = change.documentKey;
     const expiredAt = new Date(Date.now());

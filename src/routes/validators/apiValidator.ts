@@ -3,7 +3,11 @@ import { v4 as uuidv4 } from "uuid";
 import { Server } from "../../../models/Server";
 import { User } from "../../../models/User";
 
-export const apiValidator = async (req: Request<{ apikey: string }>, res: Response, next: NextFunction) => {
+export const apiValidator = async (
+  req: Request<{ apikey: string }>,
+  res: Response,
+  next: NextFunction
+) => {
   const { apikey } = req.params;
 
   try {
@@ -23,7 +27,11 @@ export const apiValidator = async (req: Request<{ apikey: string }>, res: Respon
   next();
 };
 
-export const regenerateKey = async (req: Request<{ apikey: string }>, res: Response, next: NextFunction) => {
+export const regenerateKey = async (
+  req: Request<{ apikey: string }>,
+  res: Response,
+  next: NextFunction
+) => {
   const { apikey } = req.params;
   const newApiKey = uuidv4();
 

@@ -2,11 +2,11 @@ import { Schema, model, Types } from "mongoose";
 import { Server } from "./Server";
 
 interface ITraffic {
-  path: string,
-  host: string,
-  createdAt?: Date,
-  expiredAt?: Date,
-  server: Types.ObjectId
+  path: string;
+  host: string;
+  createdAt?: Date;
+  expiredAt?: Date;
+  server: Types.ObjectId;
 }
 
 const trafficSchema = new Schema<ITraffic>({
@@ -19,7 +19,7 @@ const trafficSchema = new Schema<ITraffic>({
 
 export const Traffic = model<ITraffic>("Traffic", trafficSchema);
 
-Traffic.watch().on("change", async change => {
+Traffic.watch().on("change", async (change) => {
   if (change.operationType === "insert") {
     const { _id } = change.documentKey;
     const expiredAt = new Date(Date.now());

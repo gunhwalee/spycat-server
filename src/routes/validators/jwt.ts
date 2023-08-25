@@ -3,22 +3,34 @@ import jwt from "jsonwebtoken";
 import { User } from "../../../models/User";
 
 interface JwtPayload {
-  id: string
+  id: string;
 }
 
 interface Tokens {
-  accessToken: string,
-  refreshToken: string
+  accessToken: string;
+  refreshToken: string;
 }
 
-export const issueToken = async (req: Request, res: Response, next: NextFunction) => {
-  const accessToken: string = jwt.sign({ id: req.body.user }, process.env.ACCESS_TOKEN, {
-    expiresIn: "30m",
-  });
+export const issueToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const accessToken: string = jwt.sign(
+    { id: req.body.user },
+    process.env.ACCESS_TOKEN,
+    {
+      expiresIn: "30m",
+    }
+  );
 
-  const refreshToken: string = jwt.sign({ id: req.body.user }, process.env.REFRESH_TOKEN, {
-    expiresIn: "1d",
-  });
+  const refreshToken: string = jwt.sign(
+    { id: req.body.user },
+    process.env.REFRESH_TOKEN,
+    {
+      expiresIn: "1d",
+    }
+  );
 
   try {
     const user = await User.findByIdAndUpdate(req.body.user, { refreshToken });
@@ -68,7 +80,7 @@ const refreshTokenVerify = async (token: string, id: string) => {
         process.env.ACCESS_TOKEN,
         {
           expiresIn: "30m",
-        },
+        }
       );
 
       return { newAccessToken, refreshPayload: user._id };
@@ -78,7 +90,11 @@ const refreshTokenVerify = async (token: string, id: string) => {
   }
 };
 
-export const checkToken = async (req: Request, res: Response, next: NextFunction) => {
+export const checkToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { accessToken, refreshToken }: Tokens = req.cookies;
 
   try {
@@ -93,7 +109,7 @@ export const checkToken = async (req: Request, res: Response, next: NextFunction
 
     const { newAccessToken, refreshPayload } = await refreshTokenVerify(
       refreshToken,
-      req.params.id,
+      req.params.id
     );
 
     req.body.user = refreshPayload;

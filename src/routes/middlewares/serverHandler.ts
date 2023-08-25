@@ -15,7 +15,11 @@ const checkUrl = async (url: string) => {
   }
 };
 
-export const loadServerName = async (req: Request, res: Response, next: NextFunction) => {
+export const loadServerName = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const user = await User.findById(req.body.user).populate("servers");
     res.send({
@@ -27,7 +31,11 @@ export const loadServerName = async (req: Request, res: Response, next: NextFunc
   }
 };
 
-export const createServerInfo = async (req: Request, res: Response, next: NextFunction) => {
+export const createServerInfo = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { id } = req.params;
   const { serverName, url } = req.body;
 
@@ -58,7 +66,11 @@ export const createServerInfo = async (req: Request, res: Response, next: NextFu
   }
 };
 
-export const updateServerInfo = async (req: Request, res: Response, next: NextFunction) => {
+export const updateServerInfo = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { apikey } = req.params;
   const { type, path, host, errorName, errorMessage, errorStack } = req.body;
 
@@ -79,7 +91,7 @@ export const updateServerInfo = async (req: Request, res: Response, next: NextFu
         { apikey },
         {
           traffics: [...server.traffics, traffic._id],
-        },
+        }
       );
     }
 
@@ -96,7 +108,7 @@ export const updateServerInfo = async (req: Request, res: Response, next: NextFu
         { apikey },
         {
           errorLists: [...server.errorLists, serverError._id],
-        },
+        }
       );
     }
   } catch (err) {
@@ -109,7 +121,11 @@ export const updateServerInfo = async (req: Request, res: Response, next: NextFu
   });
 };
 
-export const loadTrafficInfo = async (req: Request, res: Response, next: NextFunction) => {
+export const loadTrafficInfo = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { apikey } = req.params;
 
   try {
@@ -134,7 +150,11 @@ export const loadTrafficInfo = async (req: Request, res: Response, next: NextFun
   }
 };
 
-export const loadErrorInfo = async (req: Request, res: Response, next: NextFunction) => {
+export const loadErrorInfo = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { apikey } = req.params;
 
   try {
@@ -159,7 +179,11 @@ export const loadErrorInfo = async (req: Request, res: Response, next: NextFunct
   }
 };
 
-export const deleteServerInfo = async (req: Request, res: Response, next: NextFunction) => {
+export const deleteServerInfo = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { url } = req.params;
 
   try {
@@ -171,7 +195,7 @@ export const deleteServerInfo = async (req: Request, res: Response, next: NextFu
 
     const user = await User.findById(req.body.user);
     const newServers = user.servers.filter(
-      element => !element.equals(server._id),
+      (element) => !element.equals(server._id)
     );
 
     const newUser = await User.findByIdAndUpdate(user._id, {
