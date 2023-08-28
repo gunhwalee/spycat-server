@@ -320,7 +320,7 @@ Spy Cat에서 자신의 서버를 등록하고, 간단한 미들웨어 함수를
 
 - 구현 결과
 
-  [작성 코드](https://github.com/gunhwalee/spycat-client/blob/main/src/charts/DonutChart.js)
+  [작성 코드](https://github.com/gunhwalee/spycat-client/blob/main/src/charts/DonutChart.tsx)
 
   <img src="https://github.com/gunhwalee/spycat-client/assets/110829006/5bb7b5b4-9bb7-4f62-9d39-de9aace75266" width="250" alt="donut chart">
 
@@ -354,7 +354,7 @@ Spy Cat에서 자신의 서버를 등록하고, 간단한 미들웨어 함수를
 
 - 결과물
 
-  [작성 코드](https://github.com/gunhwalee/spycat-client/blob/main/src/handlers/trafficInfoHandlers.js)
+  [작성 코드](https://github.com/gunhwalee/spycat-client/blob/main/src/handlers/trafficInfoHandlers.tsx)
 
 <br>
 
@@ -703,12 +703,12 @@ MongoDB는 대표적인 비관계형 데이터베이스로 유연한 스키마 �
 
 Live Site
 
-- [Spy Cat](https://spycat.netlify.app)
+- [Spy Cat](https://spycat.fun)
 
 Github Repositories
 
-- [Frontend](https://github.com/spy-cat-0/spycat-client)
-- [Backend](https://github.com/spy-cat-0/spycat-server)
+- [Frontend](https://github.com/gunhwalee/spycat-client)
+- [Backend](https://github.com/gunhwalee/spycat-server)
 
 # Schedule
 
